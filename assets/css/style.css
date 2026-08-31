@@ -1,0 +1,450 @@
+/* ============================================
+   포트폴리오 공통 스타일
+   규칙: 배경 #FFFFFF / 글씨 #000000 / 면 #ECECEC
+        선은 최소화(쓸 때만 1.5pt) / 폰트 SUIT
+        크기는 12, 14, 24, 52pt만 · 굵기는 500(미디움)·600(세미볼드)까지만
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css?family=Google+Sans:400,500,600&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
+
+:root {
+  --bg: #FFFFFF;
+  --ink: #000000;
+  --surface: #ECECEC;
+  --fs-12: 12pt;
+  --fs-14: 14pt;
+  --fs-24: 24pt;
+  --fs-52: 52pt;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Google Sans', 'SUIT Variable', 'SUIT', sans-serif;
+  font-size: var(--fs-14);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+/* ---------- 레이아웃 ---------- */
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ---------- 상단 내비게이션: 좌측 햄버거 + 로고 ---------- */
+
+.nav {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 20;
+}
+
+.nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 72px;
+}
+
+/* 햄버거 아이콘: 1.5pt 선 3개 */
+.navicon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 28px;
+  height: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.navicon span {
+  display: block;
+  width: 100%;
+  border-top: 1.5pt solid var(--ink);
+}
+
+.nav-logo {
+  font-size: var(--fs-14);
+  font-weight: 600;
+}
+
+/* 햄버거 인덱스 패널: 그룹별 세로 컬럼 배열 */
+
+.nav-index {
+  background: var(--bg);
+  padding: 48px 0 64px;
+}
+
+.nav-index .container {
+  display: flex;
+  align-items: flex-start;
+  gap: 96px;
+}
+
+.group-label {
+  font-size: var(--fs-14);
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.group-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--fs-14);
+}
+
+.group-links a {
+  background: var(--surface);
+  padding: 0 6px;
+}
+
+/* ---------- 커서 인터랙션 (quangdinh 참고) ---------- */
+
+.cursor-chip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: var(--fs-12);
+  padding: 4px 14px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.cursor-chip.on {
+  opacity: 1;
+}
+
+.project-card:hover h3 {
+  font-style: italic;
+}
+
+/* ---------- 홈: 인트로 ---------- */
+
+.hero {
+  padding: 96px 0;
+}
+
+.hero .role {
+  font-size: var(--fs-12);
+}
+
+.hero h1 {
+  font-size: var(--fs-52);
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 16px;
+}
+
+.hero p {
+  margin-top: 24px;
+  font-size: var(--fs-14);
+  max-width: 640px;
+}
+
+/* ---------- 홈: 영역별 프로젝트 ---------- */
+
+.section {
+  padding: 48px 0 96px;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: var(--fs-24);
+  font-weight: 600;
+}
+
+.section-head .view-all {
+  font-size: var(--fs-12);
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+/* 필터 화면(유형·연도로 진입)은 1열 고정
+   좌측 프로젝트명 / 중앙 큰 이미지 / 우측 메타 (quangdinh 참고) */
+.project-grid.single-column {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+/* 스냅 스크롤: 필터 화면에서 프로젝트가 한 장씩 화면에 걸림 */
+html.snap-scroll {
+  scroll-snap-type: y mandatory;
+}
+
+html.snap-scroll .footer {
+  scroll-snap-align: end;
+}
+
+.project-grid.single-column .project-card {
+  display: grid;
+  grid-template-columns: 220px 1fr 220px;
+  grid-template-areas: "name thumb meta";
+  align-items: center;
+  gap: 48px;
+  padding: 48px 0;
+  min-height: calc(100vh - 72px);
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+.project-grid.single-column .project-card h3 {
+  grid-area: name;
+}
+
+.project-grid.single-column .project-card .thumb {
+  grid-area: thumb;
+  height: 560px;
+  margin: 0;
+}
+
+.project-grid.single-column .project-card .meta {
+  grid-area: meta;
+  text-align: right;
+  margin: 0;
+}
+
+.project-card {
+  display: block;
+}
+
+.project-card .thumb {
+  height: 220px;
+  background: var(--surface);
+  margin-bottom: 16px;
+}
+
+.project-card h3 {
+  font-size: var(--fs-14);
+  font-weight: 500;
+}
+
+.project-card .meta {
+  margin-top: 4px;
+  font-size: var(--fs-12);
+}
+
+/* ---------- Work: 프로젝트 카드 나열 ---------- */
+
+.page-title {
+  padding: 64px 0 48px;
+  font-size: var(--fs-52);
+  font-weight: 600;
+}
+
+.work-grid {
+  padding: 64px 0 96px;
+}
+
+/* ---------- 홈: 어바웃 / 연락처 ---------- */
+
+.about {
+  background: var(--surface);
+  padding: 96px 0;
+}
+
+.about h2 {
+  font-size: var(--fs-24);
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.about p {
+  font-size: var(--fs-14);
+  max-width: 640px;
+}
+
+.about .contact {
+  margin-top: 48px;
+  display: flex;
+  gap: 32px;
+  font-size: var(--fs-12);
+}
+
+/* ---------- 어바웃 페이지 ---------- */
+
+.about-intro {
+  padding-bottom: 64px;
+}
+
+.about-intro .statement {
+  font-size: var(--fs-24);
+  font-weight: 500;
+  max-width: 720px;
+  margin-bottom: 32px;
+}
+
+.about-intro p:not(.statement) {
+  font-size: var(--fs-14);
+  max-width: 640px;
+  margin-bottom: 16px;
+}
+
+/* ---------- 경력 페이지 ---------- */
+
+.career-item {
+  background: var(--surface);
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+.career-item .period {
+  font-size: var(--fs-12);
+}
+
+.career-item h3 {
+  font-size: var(--fs-24);
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.career-item p {
+  margin-top: 8px;
+  font-size: var(--fs-14);
+}
+
+/* ---------- 프로젝트 상세 페이지 ---------- */
+
+.detail-header {
+  background: var(--surface);
+  padding: 96px 0;
+}
+
+.detail-header .category {
+  font-size: var(--fs-12);
+}
+
+.detail-header h1 {
+  font-size: var(--fs-52);
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.detail-header .spec {
+  margin-top: 16px;
+  font-size: var(--fs-12);
+}
+
+.detail-header p {
+  margin-top: 16px;
+  font-size: var(--fs-14);
+  max-width: 640px;
+}
+
+.detail-body {
+  padding: 64px 0;
+}
+
+.detail-body h2 {
+  font-size: var(--fs-24);
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.detail-body p {
+  font-size: var(--fs-14);
+  margin-bottom: 48px;
+  max-width: 640px;
+}
+
+.detail-image {
+  height: 360px;
+  background: var(--surface);
+  margin-bottom: 48px;
+}
+
+/* 크레딧: 라벨-값 목록 */
+
+.credits {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  row-gap: 8px;
+  margin-bottom: 48px;
+}
+
+.credits dt {
+  font-size: var(--fs-12);
+  font-weight: 500;
+}
+
+.credits dd {
+  font-size: var(--fs-12);
+}
+
+/* 이전/다음 프로젝트 이동 */
+
+.pn-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.pn-nav a {
+  background: var(--surface);
+  padding: 24px;
+  display: block;
+}
+
+.pn-nav .dir {
+  font-size: var(--fs-12);
+}
+
+.pn-nav .title {
+  font-size: var(--fs-14);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.pn-nav a.next {
+  text-align: right;
+}
+
+/* ---------- 푸터 ---------- */
+
+.footer {
+  padding: 32px 0;
+}
+
+.footer .container {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-12);
+}
+
+.footer .links {
+  display: flex;
+  gap: 24px;
+}
