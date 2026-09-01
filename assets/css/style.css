@@ -116,11 +116,6 @@ a {
 .group-links a {
   background: var(--surface);
   padding: 0 6px;
-  transition: background 0.2s;
-}
-
-.group-links a:hover {
-  background: #FFFB7C;
 }
 
 /* ---------- 커서 인터랙션 (quangdinh 참고) ---------- */
@@ -129,15 +124,14 @@ a {
   position: fixed;
   top: 0;
   left: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
   background: #FFFB7C;
-  color: var(--ink);
-  font-size: var(--fs-14);
-  padding: 0 6px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
   z-index: 10;
-  white-space: nowrap;
 }
 
 .cursor-chip.on {
@@ -496,6 +490,29 @@ img.detail-image {
   padding: 40px 0 0;
 }
 
+/* 플로팅 이전/다음 (하단 버튼이 화면에 들어오면 숨김) */
+.pn-float {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--fs-12);
+  z-index: 15;
+  transition: opacity 0.2s;
+}
+
+.pn-float-prev {
+  left: 32px;
+}
+
+.pn-float-next {
+  right: 32px;
+}
+
+.pn-float.off {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* ---------- 프로젝트 상세 페이지 ---------- */
 
 .detail-header {
@@ -573,8 +590,6 @@ img.detail-image {
 }
 
 .pn-nav a {
-  background: var(--surface);
-  padding: 24px;
   display: block;
 }
 

@@ -17,10 +17,9 @@ document.querySelector('.navicon').addEventListener('click', function () {
   document.getElementById('nav-index').toggleAttribute('hidden');
 });
 
-// 커서를 따라다니는 "See detail" 배지
+// 커서를 따라다니는 노란 점 (프로젝트 위에서만 표시)
 var chip = document.createElement('div');
 chip.className = 'cursor-chip';
-chip.textContent = 'See detail';
 document.body.appendChild(chip);
 
 document.addEventListener('mousemove', function (e) {
@@ -198,11 +197,46 @@ if (homeGrid || listGrid || detailRoot) {
         // 5. 이전/다음
         var prevA = detailRoot.querySelector('.pn-nav .prev');
         prevA.href = 'detail.html?id=' + prev.id;
-        prevA.querySelector('.title').textContent = prev.title;
+        prevA.querySelector('.title').textContent = '← ' + prev.title;
         var nextA = detailRoot.querySelector('.pn-nav .next');
         nextA.href = 'detail.html?id=' + next.id;
-        nextA.querySelector('.title').textContent = next.title;
+        nextA.querySelector('.title').textContent = next.title + ' →';
 
+        // 플로팅 이전/다음: 하단 버튼이 보이기 전까지 화면 양옆에 고정 노출
+        var floatPrev = document.createElement('a');
+        floatPrev.className = 'pn-float pn-float-prev';
+        floatPrev.textContent = '← Previous';
+        floatPrev.href = 'detail.html?id=' + prev.id;
+        var floatNext = document.createElement('a');
+        floatNext.className = 'pn-float pn-float-next';
+        floatNext.textContent = 'Next →';
+        floatNext.href = 'detail.html?id=' + next.id;
+        floatPrev.classList.add('off');
+        floatNext.classList.add('off');
+        document.body.appendChild(floatPrev);
+        document.body.appendChild(floatNext);
+
+        // 이미지 구간에 도달하면 표시, 하단 버튼을 만나면 숨김
+        var imagesReached = false;
+        var buttonsVisible = false;
+        var updateFloat = function () {
+          var show = imagesReached && !buttonsVisible;
+          floatPrev.classList.toggle('off', !show);
+          floatNext.classList.toggle('off', !show);
+        };
+        // 기준: 첫 번째 이미지의 밑단이 화면 안에 들어왔을 때
+        var firstImage = detailRoot.querySelector('.detail-image-xl');
+        var checkFirstImage = function () {
+          imagesReached = firstImage.getBoundingClientRect().bottom <= window.innerHeight;
+          updateFloat();
+        };
+        if (lenis) lenis.on('scroll', checkFirstImage);
+        else window.addEventListener('scroll', checkFirstImage, { passive: true });
+        checkFirstImage();
+        new IntersectionObserver(function (entries) {
+          buttonsVisible = entries[0].isIntersecting;
+          updateFloat();
+        }).observe(detailRoot.querySelector('.pn-nav'));
       }
     });
 } else {
