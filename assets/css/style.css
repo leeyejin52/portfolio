@@ -216,7 +216,7 @@ a {
   border: none;
   padding: 8px 12px;
   font-family: inherit;
-  font-size: calc(var(--fs-12) * 2);
+  font-size: calc(var(--fs-12) * 1.2);
   color: var(--ink);
   line-height: 1;
   animation: hint-bob 2.4s ease-in-out infinite;
@@ -616,6 +616,52 @@ img.detail-image {
   text-decoration: underline;
 }
 
+/* ---------- Connecting the dots: 생각의 지도 ---------- */
+
+/* 그림 하나가 한 화면에 들어오도록 폭과 여백을 잡는다 */
+.map-wrap {
+  padding: 104px 0 128px;
+}
+
+.mindmap {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.mindmap .diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--ink);
+}
+
+.diagram .line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.diagram .dash {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-dasharray: 3.5 3.5;
+}
+
+.diagram .dot-y {
+  fill: #FFFB7C;
+}
+
+.diagram .dot-k {
+  fill: currentColor;
+}
+
+.diagram .ring {
+  fill: none;          /* 뒤의 배경 점이 그대로 보이도록 */
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+
 /* ---------- 프로젝트 상세: 대형 썸네일 → 정보 → 그래프 → 큰 이미지들 ---------- */
 
 .detail-hero {
@@ -997,6 +1043,10 @@ img.detail-image {
 
   .page-title {
     padding: 40px 0 32px;
+  }
+
+  .map-wrap {
+    padding: 64px 0 88px;
   }
 
   /* 경력·수상: 정보와 날짜를 세로로 */

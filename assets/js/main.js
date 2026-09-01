@@ -355,9 +355,10 @@ if (awardsList) {
     });
 }
 
-// 스크롤 안내: 아래에 내용이 더 있다는 표시. 스크롤을 시작하면 사라진다
+// 스크롤 안내: 아래에 내용이 더 있다는 표시. 홈에서만 띄우고, 스크롤을 시작하면 사라진다
 (function () {
-  // 스크롤할 게 없는 페이지에는 띄우지 않는다
+  if (!document.getElementById('home-grid')) return;
+  // 스크롤할 게 없으면 띄우지 않는다
   if (document.documentElement.scrollHeight <= window.innerHeight + 40) return;
 
   var hint = document.createElement('button');
