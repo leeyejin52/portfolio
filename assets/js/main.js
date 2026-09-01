@@ -175,33 +175,34 @@ if (homeGrid || listGrid || detailRoot) {
         var next = projects[(idx - 1 + projects.length) % projects.length]; // 더 최신
 
         document.title = p.title + ' — Yejin Lee';
+
+        // 1. 대형 썸네일
+        var hero = detailRoot.querySelector('.detail-hero-thumb');
+        if (p.thumbnail) {
+          hero.outerHTML = '<img class="detail-hero-thumb" src="' + esc(ROOT + p.thumbnail) + '" alt="' + esc(p.title) + '">';
+        }
+
+        // 2. 프로젝트 정보 (본문 크기 나열)
         var set = function (sel, text) { detailRoot.querySelector(sel).textContent = text; };
-        set('.category', p.category);
-        set('h1', p.title);
-        set('.spec', p.period + ' · ' + p.org);
-        set('.summary', p.summary);
-        set('.d-overview', p.overview);
-        set('.d-process', p.process);
-        set('.d-outcome', p.outcome);
-        set('.d-period', p.period);
+        set('.d-title', p.title);
+        set('.d-category', p.category);
+        set('.d-spec', p.period + ' · ' + p.org);
+        set('.d-summary', p.summary);
         set('.d-role', p.role);
         set('.d-team', p.team);
         set('.d-tools', p.tools);
-
+        set('.d-graphnote', p.graphNote || '');
         var linkDd = detailRoot.querySelector('.d-link');
         linkDd.innerHTML = p.link ? '<a href="' + esc(p.link) + '">' + esc(p.link) + '</a>' : '—';
 
-        var img = detailRoot.querySelector('.d-image');
-        if (p.thumbnail) {
-          img.outerHTML = '<img class="detail-image" src="' + esc(ROOT + p.thumbnail) + '" alt="' + esc(p.title) + '">';
-        }
-
+        // 5. 이전/다음
         var prevA = detailRoot.querySelector('.pn-nav .prev');
         prevA.href = 'detail.html?id=' + prev.id;
         prevA.querySelector('.title').textContent = prev.title;
         var nextA = detailRoot.querySelector('.pn-nav .next');
         nextA.href = 'detail.html?id=' + next.id;
         nextA.querySelector('.title').textContent = next.title;
+
       }
     });
 } else {

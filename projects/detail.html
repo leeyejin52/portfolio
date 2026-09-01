@@ -53,39 +53,100 @@
 
   <!-- 상세 내용은 data/projects.json에서 읽어 채움 (detail.html?id=번호) -->
   <div id="detail-root">
-    <header class="detail-header">
+
+    <!-- 1. 첫 화면: 대형 썸네일 -->
+    <section class="detail-hero">
       <div class="container">
-        <p class="category"></p>
-        <h1></h1>
-        <p class="spec"></p>
-        <p class="summary"></p>
+        <div class="detail-hero-thumb"></div>
       </div>
-    </header>
+    </section>
 
-    <div class="detail-body">
+    <!-- 2. 프로젝트 정보: 본문 크기로 나열 -->
+    <section class="detail-info">
       <div class="container">
-
-        <h2>Overview</h2>
-        <p class="d-overview"></p>
-
-        <div class="detail-image d-image"></div>
-
-        <h2>Process</h2>
-        <p class="d-process"></p>
-
-        <div class="detail-image"></div>
-
-        <h2>Outcome</h2>
-        <p class="d-outcome"></p>
-
+        <h1 class="d-title"></h1>
+        <p class="d-category"></p>
+        <p class="d-spec"></p>
+        <p class="d-summary"></p>
         <dl class="credits">
-          <dt>Period</dt><dd class="d-period"></dd>
           <dt>Role</dt><dd class="d-role"></dd>
           <dt>Team</dt><dd class="d-team"></dd>
           <dt>Tools</dt><dd class="d-tools"></dd>
           <dt>Link</dt><dd class="d-link"></dd>
         </dl>
+      </div>
+    </section>
 
+    <!-- 3. 성과 그래프 (공통 자리표시 그래픽) -->
+    <section class="detail-graph">
+      <div class="container">
+        <svg viewBox="0 0 900 460" xmlns="http://www.w3.org/2000/svg" aria-label="다이어그램 자리">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#000000"/>
+            </marker>
+          </defs>
+
+          <!-- 왼쪽: 단일 순환 -->
+          <g stroke="#000000" stroke-width="1.5" fill="none">
+            <path d="M 260 355 A 130 130 0 0 0 213 100" marker-end="url(#arrow)"/>
+            <path d="M 180 95 A 130 130 0 0 0 205 358" marker-end="url(#arrow)"/>
+          </g>
+          <g stroke="#000000" stroke-width="1.5" fill="#FFFFFF">
+            <rect x="175" y="75" width="90" height="34"/>
+            <rect x="175" y="345" width="90" height="34"/>
+          </g>
+          <g font-size="13" fill="#000000" text-anchor="middle">
+            <text x="220" y="97">artist</text>
+            <text x="220" y="367">public</text>
+            <text x="220" y="60">creation</text>
+            <text x="220" y="405">apperception</text>
+            <text x="60" y="230">criticism</text>
+            <text x="382" y="230">work of art</text>
+          </g>
+
+          <!-- 오른쪽: 내부 자기 순환 포함 -->
+          <g stroke="#000000" stroke-width="1.5" fill="none">
+            <path d="M 700 355 A 130 130 0 0 0 653 100" marker-end="url(#arrow)"/>
+            <path d="M 620 95 A 130 130 0 0 0 645 358" marker-end="url(#arrow)"/>
+            <path d="M 630 112 A 70 62 0 0 0 700 232" marker-end="url(#arrow)"/>
+            <path d="M 712 225 A 70 62 0 0 0 665 108" marker-end="url(#arrow)"/>
+          </g>
+          <g stroke="#000000" stroke-width="1.5" fill="#FFFFFF">
+            <rect x="615" y="75" width="90" height="34"/>
+            <rect x="615" y="215" width="90" height="34"/>
+            <rect x="615" y="345" width="90" height="34"/>
+          </g>
+          <g font-size="13" fill="#000000" text-anchor="middle">
+            <text x="660" y="97">artist</text>
+            <text x="660" y="237">artist</text>
+            <text x="660" y="367">public</text>
+            <text x="660" y="60">creation</text>
+            <text x="660" y="405">apperception</text>
+            <text x="500" y="230">criticism</text>
+            <text x="822" y="255">work of art</text>
+            <text x="640" y="165">self-criticism</text>
+          </g>
+        </svg>
+        <p class="d-graphnote"></p>
+      </div>
+    </section>
+
+    <!-- 4. 큰 이미지 블록들 -->
+    <section class="detail-images">
+      <div class="container">
+        <div class="detail-image-xl"></div>
+        <div class="detail-image-xl"></div>
+        <div class="detail-image-xl"></div>
+        <div class="detail-image-xl"></div>
+        <div class="detail-image-xl"></div>
+        <div class="detail-image-xl"></div>
+      </div>
+    </section>
+
+    <!-- 5. 이전/다음 -->
+    <section class="detail-pn">
+      <div class="container">
         <nav class="pn-nav">
           <a class="prev" href="#">
             <p class="dir">← Previous</p>
@@ -96,9 +157,9 @@
             <p class="title"></p>
           </a>
         </nav>
-
       </div>
-    </div>
+    </section>
+
   </div>
 
   <footer class="footer">

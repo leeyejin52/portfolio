@@ -109,13 +109,18 @@ a {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 16px;
   font-size: var(--fs-14);
 }
 
 .group-links a {
   background: var(--surface);
   padding: 0 6px;
+  transition: background 0.2s;
+}
+
+.group-links a:hover {
+  background: #FFFB7C;
 }
 
 /* ---------- 커서 인터랙션 (quangdinh 참고) ---------- */
@@ -124,10 +129,10 @@ a {
   position: fixed;
   top: 0;
   left: 0;
-  background: var(--ink);
-  color: var(--bg);
-  font-size: var(--fs-12);
-  padding: 4px 14px;
+  background: #FFFB7C;
+  color: var(--ink);
+  font-size: var(--fs-14);
+  padding: 0 6px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
@@ -431,6 +436,64 @@ img.detail-image {
 .career-item p {
   margin-top: 8px;
   font-size: var(--fs-14);
+}
+
+/* ---------- 프로젝트 상세: 대형 썸네일 → 정보 → 그래프 → 큰 이미지들 ---------- */
+
+.detail-hero {
+  padding-top: 24px;
+}
+
+.detail-hero-thumb {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 120px);
+  object-fit: cover;
+  background: var(--surface);
+}
+
+.detail-info {
+  padding: 64px 0 32px;
+}
+
+.detail-info h1 {
+  font-size: var(--fs-14);
+  font-weight: 400;
+}
+
+.detail-info p {
+  font-size: var(--fs-14);
+  max-width: 640px;
+}
+
+.detail-info .d-summary {
+  margin: 16px 0 32px;
+}
+
+.detail-graph {
+  padding: 64px 0 128px;
+}
+
+.detail-graph .d-graphnote {
+  margin-top: 48px;
+  max-width: 640px;
+}
+
+.detail-graph svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.detail-images .detail-image-xl {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  background: var(--surface);
+  margin-bottom: 24px;
+}
+
+.detail-pn {
+  padding: 40px 0 0;
 }
 
 /* ---------- 프로젝트 상세 페이지 ---------- */
