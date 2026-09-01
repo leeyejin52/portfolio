@@ -205,6 +205,42 @@ a {
   opacity: 0.5;
 }
 
+/* ---------- 스크롤 안내: 아래에 더 있다는 표시 ---------- */
+
+.scroll-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 15;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: var(--fs-12);
+  color: var(--ink);
+  line-height: 1;
+  animation: hint-bob 2.4s ease-in-out infinite;
+  transition: opacity 0.4s ease;
+}
+
+.scroll-hint.off {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 제자리에서 동실동실 */
+@keyframes hint-bob {
+  0%, 100% { transform: translate(-50%, 0); }
+  50%      { transform: translate(-50%, 8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint {
+    animation: none;
+    transform: translate(-50%, 0);
+  }
+}
+
 /* ---------- 페이지 진입 전환: 노란 점이 글리치와 함께 잠깐 스쳤다 사라짐 ----------
    바깥 .g = 위치와 글리치(위치 튐·깜빡임), 안쪽 .d = 원과 미세한 흐름 */
 
@@ -396,15 +432,6 @@ html.lenis body {
   scroll-behavior: auto !important;
 }
 
-/* 스냅 스크롤(브라우저 기본): Lenis가 없을 때의 대체 동작 */
-html.snap-scroll {
-  scroll-snap-type: y mandatory;
-}
-
-html.snap-scroll .footer {
-  scroll-snap-align: end;
-}
-
 .project-grid.single-column .project-card {
   display: grid;
   grid-template-columns: 160px 1fr 160px;
@@ -413,8 +440,6 @@ html.snap-scroll .footer {
   gap: 32px;
   padding: 48px 0;
   min-height: calc(100vh - 72px);
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
 }
 
 .project-grid.single-column .project-card h3 {
@@ -890,7 +915,6 @@ img.detail-image {
     gap: 12px;
     padding: 32px 0;
     min-height: auto;
-    scroll-snap-align: none;
   }
 
   .project-grid.single-column .project-card .thumb {
@@ -947,10 +971,12 @@ img.detail-image {
     white-space: nowrap;
   }
 
-  /* 홈 인트로: 화면 높이 강제 해제, 헤드라인 축소 */
+  /* 홈 인트로: 첫 화면은 문장만 꽉 차게, 프로젝트는 스크롤해야 보이게.
+     dvh는 주소창을 뺀 실제 보이는 높이 — vh는 그 값을 못 쓰는 브라우저용 대비. */
   .hero {
-    min-height: auto;
-    padding: 40px 0 64px;
+    min-height: calc(100vh - 60px);
+    min-height: calc(100dvh - 60px);
+    padding: 32px 0;
   }
 
   .hero .dot,

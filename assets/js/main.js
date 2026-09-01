@@ -250,34 +250,6 @@ if (homeGrid || listGrid || detailRoot) {
             '<p class="meta">' + esc(p.category) + ' · ' + esc(p.periodLabel) + '</p>' +
             '</div>';
         }).join('');
-
-        // 스냅: 스크롤이 멈추면 가장 가까운 프로젝트가 화면 중앙으로
-        if (lenis) {
-          var snapping = false;
-          var snapTimer = null;
-          lenis.on('scroll', function () {
-            if (snapping) return;
-            clearTimeout(snapTimer);
-            snapTimer = setTimeout(function () {
-              var vh = window.innerHeight;
-              var bestDist = Infinity;
-              listGrid.querySelectorAll('.project-card').forEach(function (card) {
-                var r = card.getBoundingClientRect();
-                var d = (r.top + r.height / 2) - vh / 2;
-                if (Math.abs(d) < Math.abs(bestDist)) bestDist = d;
-              });
-              if (Math.abs(bestDist) > 4 && Math.abs(bestDist) < vh) {
-                snapping = true;
-                lenis.scrollTo(window.scrollY + bestDist, {
-                  duration: 0.9,
-                  onComplete: function () { snapping = false; }
-                });
-              }
-            }, 160);
-          });
-        } else {
-          document.documentElement.classList.add('snap-scroll');
-        }
       }
 
       // 상세: detail.html?id=N — 템플릿 한 장으로 모든 프로젝트 표시
@@ -382,6 +354,33 @@ if (awardsList) {
       }).join('');
     });
 }
+
+// 스크롤 안내: 아래에 내용이 더 있다는 표시. 스크롤을 시작하면 사라진다
+(function () {
+  // 스크롤할 게 없는 페이지에는 띄우지 않는다
+  if (document.documentElement.scrollHeight <= window.innerHeight + 40) return;
+
+  var hint = document.createElement('button');
+  hint.type = 'button';
+  hint.className = 'scroll-hint';
+  hint.setAttribute('aria-label', '아래로 스크롤');
+  hint.textContent = '↓';
+  document.body.appendChild(hint);
+
+  hint.addEventListener('click', function () {
+    var to = window.scrollY + window.innerHeight * 0.9;
+    if (lenis) lenis.scrollTo(to, { duration: 1.2 });
+    else window.scrollTo({ top: to, behavior: 'smooth' });
+  });
+
+  var update = function () {
+    hint.classList.toggle('off', window.scrollY > 80);
+  };
+  // Lenis가 이벤트를 못 흘릴 때를 대비해 기본 스크롤도 같이 듣는다
+  if (lenis) lenis.on('scroll', update);
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
 
 // 푸터 Back to top: 맨 위로 부드럽게
 document.querySelectorAll('.back-top').forEach(function (a) {
