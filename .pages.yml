@@ -1,0 +1,73 @@
+## Pages CMS 설정 — app.pagescms.org 에서 이 저장소를 열면 아래 정의대로 편집 화면이 생깁니다.
+
+media:
+  input: assets/img
+  output: assets/img
+
+content:
+  - name: projects
+    label: Projects
+    type: file
+    path: data/projects.json
+    fields:
+      - name: projects
+        label: 프로젝트 목록 (위가 최신)
+        type: object
+        list: true
+        fields:
+          - name: id
+            label: 번호 (고유값, 수정하지 않기)
+            type: number
+          - name: title
+            label: 제목
+            type: string
+            required: true
+          - name: category
+            label: 표시 분야 (예 "논문 · AI 프로덕트")
+            type: string
+          - name: types
+            label: 필터용 태그
+            type: select
+            options:
+              multiple: true
+              creatable: true
+              values: [논문, AI 프로덕트, 프로덕트 디자인, 그래픽 디자인, 타이포그라피, 컨텍스트 엔지니어링, 기획, PM, 개발, 전시]
+          - name: year
+            label: 연도 (예 "2026")
+            type: string
+          - name: periodLabel
+            label: 목록 표시 기간 (예 "2026.07 — 08")
+            type: string
+          - name: period
+            label: 상세 표시 기간 (예 "2026.07 — 2026.08")
+            type: string
+          - name: org
+            label: 소속 · 의뢰처
+            type: string
+          - name: thumbnail
+            label: 썸네일 이미지
+            type: image
+          - name: summary
+            label: 요약 (상세 상단)
+            type: text
+          - name: overview
+            label: Overview
+            type: text
+          - name: process
+            label: Process
+            type: text
+          - name: outcome
+            label: Outcome
+            type: text
+          - name: role
+            label: 역할
+            type: string
+          - name: team
+            label: 팀
+            type: string
+          - name: tools
+            label: 도구
+            type: string
+          - name: link
+            label: 결과물 링크 (URL)
+            type: string

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>알앤디써클 웹사이트 2.0 — Yejin Lee</title>
+  <title>Project — Yejin Lee</title>
   <link rel="stylesheet" href="../assets/css/style.css">
   <link rel="icon" href="../assets/favicon.svg">
 </head>
@@ -51,53 +51,53 @@
     </div>
   </nav>
 
-  <!-- Work record header: area / title / spec / summary -->
-  <header class="detail-header">
-    <div class="container">
-      <p class="category">프로덕트 디자인 · 개발</p>
-      <h1>알앤디써클 웹사이트 2.0</h1>
-      <p class="spec">2025.07 — 2025.08 · Dcircle</p>
-      <p>Project summary placeholder. Two or three sentences on what was made and why.</p>
-    </div>
-  </header>
+  <!-- 상세 내용은 data/projects.json에서 읽어 채움 (detail.html?id=번호) -->
+  <div id="detail-root">
+    <header class="detail-header">
+      <div class="container">
+        <p class="category"></p>
+        <h1></h1>
+        <p class="spec"></p>
+        <p class="summary"></p>
+      </div>
+    </header>
 
-  <div class="detail-body">
-    <div class="container">
+    <div class="detail-body">
+      <div class="container">
 
-      <h2>Overview</h2>
-      <p>Background and goals placeholder.</p>
+        <h2>Overview</h2>
+        <p class="d-overview"></p>
 
-      <div class="detail-image"></div>
+        <div class="detail-image d-image"></div>
 
-      <h2>Process</h2>
-      <p>What was done and how, placeholder.</p>
+        <h2>Process</h2>
+        <p class="d-process"></p>
 
-      <div class="detail-image"></div>
+        <div class="detail-image"></div>
 
-      <h2>Outcome</h2>
-      <p>Before/after results placeholder.</p>
+        <h2>Outcome</h2>
+        <p class="d-outcome"></p>
 
-      <!-- Credits: label-value record -->
-      <dl class="credits">
-        <dt>Period</dt><dd>2025.07 — 2025.08</dd>
-        <dt>Role</dt><dd>Role placeholder</dd>
-        <dt>Team</dt><dd>Collaborators placeholder</dd>
-        <dt>Tools</dt><dd>Tools placeholder</dd>
-        <dt>Link</dt><dd><a href="#">Deliverable link placeholder</a></dd>
-      </dl>
+        <dl class="credits">
+          <dt>Period</dt><dd class="d-period"></dd>
+          <dt>Role</dt><dd class="d-role"></dd>
+          <dt>Team</dt><dd class="d-team"></dd>
+          <dt>Tools</dt><dd class="d-tools"></dd>
+          <dt>Link</dt><dd class="d-link"></dd>
+        </dl>
 
-      <!-- Previous / next project -->
-      <nav class="pn-nav">
-        <a class="prev" href="project-11.html">
-          <p class="dir">← Previous</p>
-          <p class="title">Human-Like 상호작용 기반 생성형 인공지능 서비스의 사용자 경험 디자인 필요성</p>
-        </a>
-        <a class="next" href="project-09.html">
-          <p class="dir">Next →</p>
-          <p class="title">논문 활용 콘텐츠</p>
-        </a>
-      </nav>
+        <nav class="pn-nav">
+          <a class="prev" href="#">
+            <p class="dir">← Previous</p>
+            <p class="title"></p>
+          </a>
+          <a class="next" href="#">
+            <p class="dir">Next →</p>
+            <p class="title"></p>
+          </a>
+        </nav>
 
+      </div>
     </div>
   </div>
 

@@ -2,7 +2,7 @@
 var lenis = null;
 if (window.Lenis) {
   lenis = new Lenis({
-    duration: 1.2,          // 스크롤이 목표점까지 미끄러지는 시간
+    duration: 1.2,
     smoothWheel: true,
     wheelMultiplier: 1
   });
@@ -17,7 +17,7 @@ document.querySelector('.navicon').addEventListener('click', function () {
   document.getElementById('nav-index').toggleAttribute('hidden');
 });
 
-// 커서를 따라다니는 "See detail" 배지 (프로젝트 위에서만 표시)
+// 커서를 따라다니는 "See detail" 배지
 var chip = document.createElement('div');
 chip.className = 'cursor-chip';
 chip.textContent = 'See detail';
@@ -27,67 +27,11 @@ document.addEventListener('mousemove', function (e) {
   chip.style.transform = 'translate(' + (e.clientX + 16) + 'px, ' + (e.clientY + 16) + 'px)';
 });
 
-// 프로젝트 리스트 화면에서는 이미지 위에서만, 그 외에는 카드 전체에서 배지 표시
-var chipSelector = document.querySelector('.work-grid') ? '.project-card .thumb' : '.project-card';
-document.querySelectorAll(chipSelector).forEach(function (el) {
-  el.addEventListener('mouseenter', function () { chip.classList.add('on'); });
-  el.addEventListener('mouseleave', function () { chip.classList.remove('on'); });
-});
-
-// 전체 프로젝트 페이지(projects.html)는 항상 1열 나열 + 스냅.
-// 메뉴의 유형·연도(?type= / ?year=)로 들어오면 그 조건에 맞는 것만 남김.
-var params = new URLSearchParams(location.search);
-var filterType = params.get('type');
-var filterYear = params.get('year');
-var isProjectsPage = !!document.querySelector('.work-grid');
-
-if (isProjectsPage) {
-  // 1열 정렬 (필터 유무와 무관)
-  document.querySelectorAll('.project-grid').forEach(function (grid) {
-    grid.classList.add('single-column');
+function bindChip(selector) {
+  document.querySelectorAll(selector).forEach(function (el) {
+    el.addEventListener('mouseenter', function () { chip.classList.add('on'); });
+    el.addEventListener('mouseleave', function () { chip.classList.remove('on'); });
   });
-
-  // "기획 · PM"처럼 묶인 메뉴 항목은 두 태그 중 하나만 있어도 매칭
-  var typeGroups = { '기획 · PM': ['기획', 'PM'] };
-  var wantedTypes = filterType ? (typeGroups[filterType] || [filterType]) : null;
-
-  document.querySelectorAll('.project-card[data-year]').forEach(function (card) {
-    var cardTypes = (card.getAttribute('data-types') || '').split(',');
-    var typeOk = !wantedTypes || wantedTypes.some(function (t) { return cardTypes.indexOf(t) !== -1; });
-    var yearOk = !filterYear || card.getAttribute('data-year') === filterYear;
-    card.style.display = (typeOk && yearOk) ? '' : 'none';
-  });
-
-  // 스냅: 스크롤이 멈추면 가장 가까운 프로젝트가 화면 중앙으로 미끄러져 들어옴
-  if (lenis) {
-    var snapping = false;
-    var snapTimer = null;
-
-    lenis.on('scroll', function () {
-      if (snapping) return;
-      clearTimeout(snapTimer);
-      snapTimer = setTimeout(function () {
-        var vh = window.innerHeight;
-        var bestDist = Infinity;
-        document.querySelectorAll('.project-card[data-year]').forEach(function (card) {
-          if (card.style.display === 'none') return;
-          var r = card.getBoundingClientRect();
-          var d = (r.top + r.height / 2) - vh / 2;
-          if (Math.abs(d) < Math.abs(bestDist)) bestDist = d;
-        });
-        if (Math.abs(bestDist) > 4 && Math.abs(bestDist) < vh) {
-          snapping = true;
-          lenis.scrollTo(window.scrollY + bestDist, {
-            duration: 0.9,
-            onComplete: function () { snapping = false; }
-          });
-        }
-      }, 160);
-    });
-  } else {
-    // Lenis가 없을 때만 브라우저 기본 스냅으로 대체
-    document.documentElement.classList.add('snap-scroll');
-  }
 }
 
 // Contact 모달: 어디서든 Contact를 누르면 연락처 정보 표시
@@ -122,3 +66,144 @@ overlay.addEventListener('click', function (e) {
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') overlay.hidden = true;
 });
+
+/* ============================================================
+   콘텐츠 렌더링 — 모든 프로젝트 정보는 data/projects.json 한 파일이 정본.
+   Pages CMS에서 그 파일을 수정하면 홈·리스트·상세가 함께 바뀐다.
+   ============================================================ */
+
+// 페이지가 저장소 루트인지 /projects/ 안인지에 따라 경로 접두어 결정
+var ROOT = location.pathname.indexOf('/projects/') !== -1 ? '../' : '';
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function thumbHTML(p) {
+  if (p.thumbnail) {
+    return '<img class="thumb" src="' + esc(ROOT + p.thumbnail) + '" alt="' + esc(p.title) + '">';
+  }
+  return '<div class="thumb"></div>';
+}
+
+function detailURL(p) {
+  return ROOT + 'projects/detail.html?id=' + p.id;
+}
+
+var homeGrid = document.getElementById('home-grid');
+var listGrid = document.getElementById('list-grid');
+var detailRoot = document.getElementById('detail-root');
+
+if (homeGrid || listGrid || detailRoot) {
+  fetch(ROOT + 'data/projects.json')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var projects = data.projects || [];
+
+      // 홈: 카드 전체가 링크
+      if (homeGrid) {
+        homeGrid.innerHTML = projects.map(function (p) {
+          return '<a class="project-card" href="' + detailURL(p) + '">' +
+            thumbHTML(p) +
+            '<h3>' + esc(p.title) + '</h3>' +
+            '<p class="meta">' + esc(p.category) + ' · ' + esc(p.periodLabel) + '</p>' +
+            '</a>';
+        }).join('');
+        bindChip('.project-card');
+      }
+
+      // 리스트: 1열 나열, 이미지만 링크. 메뉴의 유형·연도가 곧 필터
+      if (listGrid) {
+        var params = new URLSearchParams(location.search);
+        var filterType = params.get('type');
+        var filterYear = params.get('year');
+        var typeGroups = { '기획 · PM': ['기획', 'PM'] };
+        var wantedTypes = filterType ? (typeGroups[filterType] || [filterType]) : null;
+
+        var shown = projects.filter(function (p) {
+          var typeOk = !wantedTypes || wantedTypes.some(function (t) { return (p.types || []).indexOf(t) !== -1; });
+          var yearOk = !filterYear || p.year === filterYear;
+          return typeOk && yearOk;
+        });
+
+        listGrid.classList.add('single-column');
+        listGrid.innerHTML = shown.map(function (p) {
+          return '<div class="project-card">' +
+            '<a class="thumb-link" href="' + detailURL(p) + '">' + thumbHTML(p) + '</a>' +
+            '<h3>' + esc(p.title) + '</h3>' +
+            '<p class="meta">' + esc(p.category) + ' · ' + esc(p.periodLabel) + '</p>' +
+            '</div>';
+        }).join('');
+        bindChip('.project-card .thumb');
+
+        // 스냅: 스크롤이 멈추면 가장 가까운 프로젝트가 화면 중앙으로
+        if (lenis) {
+          var snapping = false;
+          var snapTimer = null;
+          lenis.on('scroll', function () {
+            if (snapping) return;
+            clearTimeout(snapTimer);
+            snapTimer = setTimeout(function () {
+              var vh = window.innerHeight;
+              var bestDist = Infinity;
+              listGrid.querySelectorAll('.project-card').forEach(function (card) {
+                var r = card.getBoundingClientRect();
+                var d = (r.top + r.height / 2) - vh / 2;
+                if (Math.abs(d) < Math.abs(bestDist)) bestDist = d;
+              });
+              if (Math.abs(bestDist) > 4 && Math.abs(bestDist) < vh) {
+                snapping = true;
+                lenis.scrollTo(window.scrollY + bestDist, {
+                  duration: 0.9,
+                  onComplete: function () { snapping = false; }
+                });
+              }
+            }, 160);
+          });
+        } else {
+          document.documentElement.classList.add('snap-scroll');
+        }
+      }
+
+      // 상세: detail.html?id=N — 템플릿 한 장으로 모든 프로젝트 표시
+      if (detailRoot) {
+        var id = parseInt(new URLSearchParams(location.search).get('id'), 10);
+        var idx = projects.findIndex(function (p) { return p.id === id; });
+        if (idx === -1) idx = 0;
+        var p = projects[idx];
+        var prev = projects[(idx + 1) % projects.length]; // 더 오래된 것
+        var next = projects[(idx - 1 + projects.length) % projects.length]; // 더 최신
+
+        document.title = p.title + ' — Yejin Lee';
+        var set = function (sel, text) { detailRoot.querySelector(sel).textContent = text; };
+        set('.category', p.category);
+        set('h1', p.title);
+        set('.spec', p.period + ' · ' + p.org);
+        set('.summary', p.summary);
+        set('.d-overview', p.overview);
+        set('.d-process', p.process);
+        set('.d-outcome', p.outcome);
+        set('.d-period', p.period);
+        set('.d-role', p.role);
+        set('.d-team', p.team);
+        set('.d-tools', p.tools);
+
+        var linkDd = detailRoot.querySelector('.d-link');
+        linkDd.innerHTML = p.link ? '<a href="' + esc(p.link) + '">' + esc(p.link) + '</a>' : '—';
+
+        var img = detailRoot.querySelector('.d-image');
+        if (p.thumbnail) {
+          img.outerHTML = '<img class="detail-image" src="' + esc(ROOT + p.thumbnail) + '" alt="' + esc(p.title) + '">';
+        }
+
+        var prevA = detailRoot.querySelector('.pn-nav .prev');
+        prevA.href = 'detail.html?id=' + prev.id;
+        prevA.querySelector('.title').textContent = prev.title;
+        var nextA = detailRoot.querySelector('.pn-nav .next');
+        nextA.href = 'detail.html?id=' + next.id;
+        nextA.querySelector('.title').textContent = next.title;
+      }
+    });
+} else {
+  bindChip('.project-card');
+}

@@ -332,6 +332,16 @@ html.snap-scroll .footer {
   aspect-ratio: 7 / 5;
   background: var(--surface);
   margin-bottom: 16px;
+  display: block;
+  width: 100%;
+  object-fit: cover; /* 실제 이미지가 들어오면 비율 유지하며 채움 */
+}
+
+img.detail-image {
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+  display: block;
 }
 
 .project-card h3 {
