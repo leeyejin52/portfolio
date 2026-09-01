@@ -216,7 +216,7 @@ a {
   border: none;
   padding: 8px 12px;
   font-family: inherit;
-  font-size: var(--fs-12);
+  font-size: calc(var(--fs-12) * 2);
   color: var(--ink);
   line-height: 1;
   animation: hint-bob 2.4s ease-in-out infinite;
@@ -948,6 +948,11 @@ img.detail-image {
 
   .nav-bar {
     height: 60px;
+  }
+
+  .navicon {
+    width: 22px;
+    height: 14px;
   }
 
   /* 메뉴: 3컬럼 → 세로 스택, 태그는 가로로 흐르게 */
