@@ -119,10 +119,37 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
   });
 }
 
-// 햄버거 메뉴 토글
-document.querySelector('.navicon').addEventListener('click', function () {
-  document.getElementById('nav-index').toggleAttribute('hidden');
-});
+// 햄버거 메뉴 토글 — hidden 대신 클래스로 여닫아야 높이 전환이 걸린다
+(function () {
+  var navicon = document.querySelector('.navicon');
+  var panel = document.getElementById('nav-index');
+  if (!navicon || !panel) return;
+
+  // 스크립트가 없을 때를 위해 HTML에는 hidden을 두고, 여기서 걷어낸다
+  panel.removeAttribute('hidden');
+  panel.inert = true;
+  navicon.setAttribute('aria-expanded', 'false');
+
+  // 컬럼을 차례로 펼치기 위해 항목마다 시작 시각(--d)을 누적해서 심는다.
+  // About이 한 줄씩 다 나온 다음 Project Type, 그다음 Year 순.
+  var STEP = 0.05;   // 항목 사이 간격(초)
+  var GAP = 0.08;    // 컬럼과 컬럼 사이 쉼(초)
+  var base = 0;
+
+  panel.querySelectorAll('.index-group').forEach(function (group) {
+    var items = group.querySelectorAll('.group-label, .group-links a');
+    items.forEach(function (el, i) {
+      el.style.setProperty('--d', (base + i * STEP).toFixed(2) + 's');
+    });
+    base += items.length * STEP + GAP;
+  });
+
+  navicon.addEventListener('click', function () {
+    var open = panel.classList.toggle('open');
+    navicon.setAttribute('aria-expanded', String(open));
+    panel.inert = !open;   // 닫혔을 때 메뉴 링크로 탭 이동되지 않도록
+  });
+})();
 
 // Contact 모달: 어디서든 Contact를 누르면 연락처 정보 표시
 var overlay = document.createElement('div');

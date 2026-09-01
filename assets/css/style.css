@@ -88,15 +88,58 @@ a {
 
 /* 햄버거 인덱스 패널: 그룹별 세로 컬럼 배열 */
 
+/* 열고 닫힘: 0fr → 1fr 이라 내용 높이를 몰라도 부드럽게 늘어난다.
+   감속 곡선은 스크롤(Lenis)과 같은 결로 뒤로 갈수록 천천히 멈춘다. */
 .nav-index {
+  display: grid;
+  grid-template-rows: 0fr;
   background: var(--bg);
-  padding: 48px 0 64px;
+  transition: grid-template-rows 0.75s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-.nav-index .container {
+.nav-index.open {
+  grid-template-rows: 1fr;
+  transition-duration: 1.4s;
+}
+
+/* 위아래 여백도 같이 접혀야 닫혔을 때 높이가 완전히 0이 된다 */
+.nav-index > .container {
+  width: 100%;        /* 그리드 항목이 되면 내용 폭으로 줄어들어 가운데로 몰린다 */
+  overflow: hidden;
+  min-height: 0;
   display: flex;
   align-items: flex-start;
   gap: 96px;
+  padding-top: 0;
+  padding-bottom: 0;
+  transition: padding 0.75s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.nav-index.open > .container {
+  padding-top: 48px;
+  padding-bottom: 64px;
+  transition-duration: 1.4s;
+}
+
+/* 항목이 하나씩 차례로 내려앉는다.
+   --gi(컬럼 순서), --i(컬럼 안 항목 순서)는 스크립트가 넣는다. */
+/* 닫힐 때는 곧바로 사라진다 — 반투명한 글자가 남아 시선을 끌지 않도록 */
+.nav-index .group-label,
+.nav-index .group-links a {
+  opacity: 0;
+  transform: translateY(-14px);
+  transition: opacity 0.12s ease, transform 0s linear 0.12s;
+}
+
+/* 열릴 때만 하나씩 차례로 내려앉는다.
+   --d(항목별 시작 시각)는 스크립트가 컬럼 순서대로 누적해 넣는다 —
+   About 한 줄씩 다 나온 뒤 Project Type, 그다음 Year. */
+.nav-index.open .group-label,
+.nav-index.open .group-links a {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+  transition-delay: var(--d, 0s);
 }
 
 .group-label {
@@ -139,11 +182,11 @@ a {
   position: fixed;
   top: 0;
   left: 0;
-  width: 20px;
-  height: 20px;
-  margin: -10px 0 0 -10px;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;   /* 포인터가 원의 정중앙에 오도록 */
+  border: 1.5pt solid var(--ink);
   border-radius: 50%;
-  background: #FFFB7C;
   pointer-events: none;
   z-index: 9999;
   opacity: 0;
@@ -884,13 +927,14 @@ img.detail-image {
   }
 
   /* 메뉴: 3컬럼 → 세로 스택, 태그는 가로로 흐르게 */
-  .nav-index {
-    padding: 8px 0 40px;
-  }
-
-  .nav-index .container {
+  .nav-index > .container {
     flex-direction: column;
     gap: 32px;
+  }
+
+  .nav-index.open > .container {
+    padding-top: 8px;
+    padding-bottom: 40px;
   }
 
   .group-links {
