@@ -74,3 +74,39 @@ content:
           - name: link
             label: 결과물 링크 (URL)
             type: string
+
+  - name: awards
+    label: Awards
+    type: file
+    path: data/awards.json
+    fields:
+      - name: awards
+        label: 수상 내역 (위가 최신)
+        type: object
+        list: true
+        fields:
+          - name: id
+            label: 번호 (고유값, 수정하지 않기)
+            type: number
+          - name: award
+            label: 수상명 (예 "우수 졸업 작품상")
+            type: string
+            required: true
+          - name: division
+            label: 부문 (예 "타이포그라피 부문")
+            type: string
+          - name: org
+            label: 주최 · 소속
+            type: string
+          - name: work
+            label: 수상 작품 · 논문 제목
+            type: string
+          - name: projectId
+            label: 연결할 프로젝트 번호 (Projects의 번호)
+            type: number
+          - name: kor
+            label: 국문 표기 (수상명 · 부문 · 주최)
+            type: string
+          - name: date
+            label: 수상 시점 (예 "2026.08")
+            type: string

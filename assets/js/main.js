@@ -42,10 +42,10 @@ overlay.innerHTML =
   '<button class="contact-close" aria-label="Close">×</button>' +
   '<p class="contact-title">Contact</p>' +
   '<dl class="credits">' +
-  '<dt>Email</dt><dd><a href="mailto:hello@example.com">hello@example.com</a></dd>' +
-  '<dt>Phone</dt><dd><a href="tel:+821057911507">+82 10-5791-1507</a></dd>' +
-  '<dt>LinkedIn</dt><dd><a href="#">링크가 들어갈 자리</a></dd>' +
-  '<dt>Instagram</dt><dd><a href="#">링크가 들어갈 자리</a></dd>' +
+  '<dt>Email</dt><dd><a href="mailto:yejin0502@gmail.com">yejin0502@gmail.com</a></dd>' +
+  '<dt>LinkedIn</dt><dd><a href="https://www.linkedin.com/in/yejinlee0502/">linkedin.com/in/yejinlee0502</a></dd>' +
+  '<dt>Instagram</dt><dd><a href="https://www.instagram.com/ee_owol/">@ee_owol</a></dd>' +
+  '<dt>GitHub</dt><dd><a href="https://github.com/leeyejin52">github.com/leeyejin52</a></dd>' +
   '</dl></div>';
 document.body.appendChild(overlay);
 
@@ -241,6 +241,32 @@ if (homeGrid || listGrid || detailRoot) {
     });
 } else {
   bindChip('.project-card');
+}
+
+// 수상 내역 — data/awards.json 이 정본. Pages CMS에서 그 파일을 수정하면 이 페이지가 바뀐다.
+var awardsList = document.getElementById('awards-list');
+if (awardsList) {
+  fetch(ROOT + 'data/awards.json')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var awards = data.awards || [];
+      awardsList.innerHTML = awards.map(function (a) {
+        // 둘째 줄: 프로젝트명만 상세로 연결, 부문·주최는 일반 텍스트
+        var workHTML = a.projectId ?
+          '<a href="' + ROOT + 'projects/detail.html?id=' + esc(a.projectId) + '">' + esc(a.work) + '</a>' :
+          esc(a.work);
+        var sub = [a.work ? workHTML : '', esc(a.division), esc(a.org)]
+          .filter(Boolean).join(' · ');
+        return '<div class="career-row">' +
+          '<div class="career-body">' +
+          '<h3>' + esc(a.award) + '</h3>' +
+          (sub ? '<p class="career-org">' + sub + '</p>' : '') +
+          (a.kor ? '<p class="career-kor">' + esc(a.kor) + '</p>' : '') +
+          '</div>' +
+          '<p class="period">' + esc(a.date) + '</p>' +
+          '</div>';
+      }).join('');
+    });
 }
 
 // 푸터 Back to top: 맨 위로 부드럽게

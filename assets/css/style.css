@@ -411,25 +411,58 @@ img.detail-image {
 
 /* ---------- 경력 페이지 ---------- */
 
-.career-item {
-  background: var(--surface);
-  padding: 32px;
-  margin-bottom: 24px;
+.career-group {
+  padding-bottom: 128px;
 }
 
-.career-item .period {
+.career-group .group-heading {
+  display: inline-block;
+  font-size: var(--fs-14);
+  font-weight: 400;
+  background: var(--surface);
+  padding: 0 6px;
+  margin-bottom: 16px;
+}
+
+.career-row {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 32px;
+  padding: 24px 0;
+}
+
+.career-row .period {
+  font-size: var(--fs-12);
+  text-align: right;
+}
+
+.career-row h3 {
+  font-size: var(--fs-24);
+  font-weight: 400;
+}
+
+.career-row .career-org {
+  margin-top: 8px;
   font-size: var(--fs-12);
 }
 
-.career-item h3 {
-  font-size: var(--fs-24);
-  font-weight: 400;
-  margin-top: 8px;
+.career-row .career-kor {
+  font-size: var(--fs-12);
 }
 
-.career-item p {
-  margin-top: 8px;
-  font-size: var(--fs-14);
+.career-row .career-org a {
+  text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+  .career-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .career-row .period {
+    text-align: left;
+  }
 }
 
 /* ---------- 프로젝트 상세: 대형 썸네일 → 정보 → 그래프 → 큰 이미지들 ---------- */

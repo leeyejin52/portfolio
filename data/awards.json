@@ -1,0 +1,44 @@
+{
+  "awards": [
+    {
+      "id": 1,
+      "award": "Outstanding Thesis Award",
+      "division": "",
+      "org": "SeoulTech Graduate School",
+      "work": "A Study on UX Guidelines for Designing Human-AI Creative Co-Creation Experiences",
+      "projectId": 1,
+      "kor": "2025학년도 후기 우수 논문상 · 서울과학기술대학교 일반대학원",
+      "date": "2026.08"
+    },
+    {
+      "id": 2,
+      "award": "Outstanding Graduation Work Award",
+      "division": "UX Design Category",
+      "org": "41st Graduation Exhibition, SeoulTech",
+      "work": "OLTA: Human Rights Issue Selectshop Platform",
+      "projectId": 15,
+      "kor": "제41회 졸업작품 전시회 우수 졸업 작품상 UX 디자인 부문",
+      "date": "2023.11"
+    },
+    {
+      "id": 3,
+      "award": "Outstanding Graduation Work Award",
+      "division": "Editorial Design Category",
+      "org": "41st Graduation Exhibition, SeoulTech",
+      "work": "group, crowd, party, bunch, throng, herd, flock",
+      "projectId": 14,
+      "kor": "제41회 졸업작품 전시회 우수 졸업 작품상 편집 디자인 부문",
+      "date": "2023.11"
+    },
+    {
+      "id": 4,
+      "award": "First Prize",
+      "division": "",
+      "org": "KDM+ · Hankook Tire & Technology Industry-Academia Project",
+      "work": "WARP: Premium Car Wash Experience",
+      "projectId": 13,
+      "kor": "최우수상 · 한국타이어 산학 프로젝트 (KDM+)",
+      "date": "2023.08"
+    }
+  ]
+}
