@@ -1,3 +1,17 @@
+// 부드러운 스크롤 (Lenis) — quangdinh.im 참고: 관성 있는 무게감·속도감
+var lenis = null;
+if (window.Lenis) {
+  lenis = new Lenis({
+    duration: 1.2,          // 스크롤이 목표점까지 미끄러지는 시간
+    smoothWheel: true,
+    wheelMultiplier: 1
+  });
+  requestAnimationFrame(function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  });
+}
+
 // 햄버거 메뉴 토글
 document.querySelector('.navicon').addEventListener('click', function () {
   document.getElementById('nav-index').toggleAttribute('hidden');
@@ -24,8 +38,7 @@ var filterType = params.get('type');
 var filterYear = params.get('year');
 
 if (filterType || filterYear) {
-  // 필터로 들어온 화면은 무조건 1열 정렬 + 프로젝트 단위 스냅 스크롤
-  document.documentElement.classList.add('snap-scroll');
+  // 필터로 들어온 화면은 무조건 1열 정렬
   document.querySelectorAll('.project-grid').forEach(function (grid) {
     grid.classList.add('single-column');
   });
@@ -40,4 +53,35 @@ if (filterType || filterYear) {
     var yearOk = !filterYear || card.getAttribute('data-year') === filterYear;
     card.style.display = (typeOk && yearOk) ? '' : 'none';
   });
+
+  // 스냅: 스크롤이 멈추면 가장 가까운 프로젝트가 화면 중앙으로 미끄러져 들어옴
+  if (lenis) {
+    var snapping = false;
+    var snapTimer = null;
+
+    lenis.on('scroll', function () {
+      if (snapping) return;
+      clearTimeout(snapTimer);
+      snapTimer = setTimeout(function () {
+        var vh = window.innerHeight;
+        var bestDist = Infinity;
+        document.querySelectorAll('.project-card[data-year]').forEach(function (card) {
+          if (card.style.display === 'none') return;
+          var r = card.getBoundingClientRect();
+          var d = (r.top + r.height / 2) - vh / 2;
+          if (Math.abs(d) < Math.abs(bestDist)) bestDist = d;
+        });
+        if (Math.abs(bestDist) > 4 && Math.abs(bestDist) < vh) {
+          snapping = true;
+          lenis.scrollTo(window.scrollY + bestDist, {
+            duration: 0.9,
+            onComplete: function () { snapping = false; }
+          });
+        }
+      }, 160);
+    });
+  } else {
+    // Lenis가 없을 때만 브라우저 기본 스냅으로 대체
+    document.documentElement.classList.add('snap-scroll');
+  }
 }

@@ -2,10 +2,10 @@
    포트폴리오 공통 스타일
    규칙: 배경 #FFFFFF / 글씨 #000000 / 면 #ECECEC
         선은 최소화(쓸 때만 1.5pt) / 폰트 SUIT
-        크기는 12, 14, 24, 52pt만 · 굵기는 500(미디움)·600(세미볼드)까지만
+        크기는 12, 16, 42pt만 · 굵기는 400(레귤러) 단일
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css?family=Google+Sans:400,500,600&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Google+Sans:400&display=swap');
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 
 :root {
@@ -13,9 +13,9 @@
   --ink: #000000;
   --surface: #ECECEC;
   --fs-12: 12pt;
-  --fs-14: 14pt;
-  --fs-24: 24pt;
-  --fs-52: 52pt;
+  --fs-14: 12pt;
+  --fs-24: 16pt;
+  --fs-52: 42pt;
 }
 
 * {
@@ -29,6 +29,7 @@ body {
   color: var(--ink);
   font-family: 'Google Sans', 'SUIT Variable', 'SUIT', sans-serif;
   font-size: var(--fs-14);
+  font-weight: 400;
   line-height: 1.6;
 }
 
@@ -82,7 +83,7 @@ a {
 
 .nav-logo {
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: 400;
 }
 
 /* 햄버거 인덱스 패널: 그룹별 세로 컬럼 배열 */
@@ -100,7 +101,7 @@ a {
 
 .group-label {
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: 400;
   margin-bottom: 12px;
 }
 
@@ -138,8 +139,12 @@ a {
   opacity: 1;
 }
 
-.project-card:hover h3 {
-  font-style: italic;
+.project-card {
+  transition: opacity 0.2s;
+}
+
+.project-card:hover {
+  opacity: 0.5;
 }
 
 /* ---------- 홈: 인트로 ---------- */
@@ -154,7 +159,7 @@ a {
 
 .hero h1 {
   font-size: var(--fs-52);
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.3;
   margin-top: 16px;
 }
@@ -180,7 +185,7 @@ a {
 
 .section-title {
   font-size: var(--fs-24);
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .section-head .view-all {
@@ -200,7 +205,17 @@ a {
   gap: 0;
 }
 
-/* 스냅 스크롤: 필터 화면에서 프로젝트가 한 장씩 화면에 걸림 */
+/* Lenis 부드러운 스크롤 권장 설정 */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+/* 스냅 스크롤(브라우저 기본): Lenis가 없을 때의 대체 동작 */
 html.snap-scroll {
   scroll-snap-type: y mandatory;
 }
@@ -211,10 +226,10 @@ html.snap-scroll .footer {
 
 .project-grid.single-column .project-card {
   display: grid;
-  grid-template-columns: 220px 1fr 220px;
+  grid-template-columns: 160px 1fr 160px;
   grid-template-areas: "name thumb meta";
   align-items: center;
-  gap: 48px;
+  gap: 32px;
   padding: 48px 0;
   min-height: calc(100vh - 72px);
   scroll-snap-align: center;
@@ -227,7 +242,7 @@ html.snap-scroll .footer {
 
 .project-grid.single-column .project-card .thumb {
   grid-area: thumb;
-  height: 560px;
+  height: 680px;
   margin: 0;
 }
 
@@ -242,14 +257,14 @@ html.snap-scroll .footer {
 }
 
 .project-card .thumb {
-  height: 220px;
+  height: 340px;
   background: var(--surface);
   margin-bottom: 16px;
 }
 
 .project-card h3 {
   font-size: var(--fs-14);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .project-card .meta {
@@ -262,7 +277,7 @@ html.snap-scroll .footer {
 .page-title {
   padding: 64px 0 48px;
   font-size: var(--fs-52);
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .work-grid {
@@ -278,7 +293,7 @@ html.snap-scroll .footer {
 
 .about h2 {
   font-size: var(--fs-24);
-  font-weight: 600;
+  font-weight: 400;
   margin-bottom: 24px;
 }
 
@@ -302,7 +317,7 @@ html.snap-scroll .footer {
 
 .about-intro .statement {
   font-size: var(--fs-24);
-  font-weight: 500;
+  font-weight: 400;
   max-width: 720px;
   margin-bottom: 32px;
 }
@@ -327,7 +342,7 @@ html.snap-scroll .footer {
 
 .career-item h3 {
   font-size: var(--fs-24);
-  font-weight: 500;
+  font-weight: 400;
   margin-top: 8px;
 }
 
@@ -349,7 +364,7 @@ html.snap-scroll .footer {
 
 .detail-header h1 {
   font-size: var(--fs-52);
-  font-weight: 600;
+  font-weight: 400;
   margin-top: 8px;
 }
 
@@ -370,7 +385,7 @@ html.snap-scroll .footer {
 
 .detail-body h2 {
   font-size: var(--fs-24);
-  font-weight: 500;
+  font-weight: 400;
   margin-bottom: 16px;
 }
 
@@ -397,7 +412,7 @@ html.snap-scroll .footer {
 
 .credits dt {
   font-size: var(--fs-12);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .credits dd {
@@ -424,7 +439,7 @@ html.snap-scroll .footer {
 
 .pn-nav .title {
   font-size: var(--fs-14);
-  font-weight: 500;
+  font-weight: 400;
   margin-top: 4px;
 }
 
