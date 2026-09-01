@@ -12,6 +12,95 @@ if (window.Lenis) {
   });
 }
 
+// 페이지 진입 전환: 노란 점이 글리치와 함께 잠깐 스쳤다 사라진다
+// 홈은 배경에 점이 이미 있으므로, 새 점을 띄우지 않고 그 점들이 등장할 때 같은 글리치를 입힌다
+(function () {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var DUR_G = 900;
+
+  var heroImage = document.querySelector('.hero-image');
+  if (heroImage) {
+    heroImage.style.animation = 'enter-jitter ' + DUR_G + 'ms steps(1, end) both';
+
+    heroImage.querySelectorAll('.dot').forEach(function (dot) {
+      // 기존 drift 값을 살린 채 flicker를 두 번째 애니메이션으로 얹는다
+      var cs = getComputedStyle(dot);
+      var driftDur = cs.animationDuration;
+      var driftDelay = cs.animationDelay;
+      var flickerDelay = (Math.random() * 200).toFixed(0) + 'ms';
+
+      dot.style.animationName = 'drift, enter-flicker';
+      dot.style.animationDuration = driftDur + ', ' + DUR_G + 'ms';
+      dot.style.animationDelay = driftDelay + ', ' + flickerDelay;
+      dot.style.animationTimingFunction = 'ease-in-out, steps(1, end)';
+      dot.style.animationIterationCount = 'infinite, 1';
+      dot.style.animationDirection = 'alternate, normal';
+      // forwards: 시작 전에는 원래대로 보이게 둔다 (탭이 비활성이라 애니메이션이
+      // 시작되지 않아도 배경 점이 사라지지 않도록)
+      dot.style.animationFillMode = 'none, forwards';
+    });
+    return;
+  }
+
+  var COUNT = 30;
+  var DUR = 900;      // 전환 길이(ms)
+  var DRIFT = 8;      // 제자리에서 흐르는 총 거리(px)
+  var CLUSTERS = 3;
+  var CLUMP = 0.7;    // 무리에 속하는 점의 비율 — 나머지는 화면 전체에 흩뿌림
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function bell() { return ((Math.random() + Math.random() + Math.random()) / 3) * 2 - 1; }
+
+  var layer = document.createElement('div');
+  layer.className = 'enter-dots';
+  layer.setAttribute('aria-hidden', 'true');
+
+  var clusters = [];
+  for (var c = 0; c < CLUSTERS; c++) clusters.push({ x: rand(8, 92), y: rand(8, 92) });
+
+  var spreadX = 26 - CLUMP * 18;
+  var spreadY = 30 - CLUMP * 20;
+
+  for (var i = 0; i < COUNT; i++) {
+    var g = document.createElement('span');
+    g.className = 'g';
+    var d = document.createElement('span');
+    d.className = 'd';
+    g.appendChild(d);
+
+    // 뭉치는 자리와 성긴 자리를 만들어 밀도 대비를 준다
+    if (Math.random() < CLUMP) {
+      var cl = clusters[Math.floor(Math.random() * clusters.length)];
+      g.style.left = Math.max(-3, Math.min(99, cl.x + bell() * spreadX)) + 'vw';
+      g.style.top = Math.max(-3, Math.min(99, cl.y + bell() * spreadY)) + 'vh';
+    } else {
+      g.style.left = rand(-3, 99) + 'vw';
+      g.style.top = rand(-3, 99) + 'vh';
+    }
+
+    // 점마다 제각기 다른 방향으로
+    var ang = rand(0, Math.PI * 2);
+    var dx = Math.cos(ang) * (DRIFT / 2);
+    var dy = Math.sin(ang) * (DRIFT / 2);
+    d.style.setProperty('--fx', dx.toFixed(2) + 'px');
+    d.style.setProperty('--fy', dy.toFixed(2) + 'px');
+    d.style.setProperty('--tx', (-dx).toFixed(2) + 'px');
+    d.style.setProperty('--ty', (-dy).toFixed(2) + 'px');
+
+    var delay = rand(0, 200) + 'ms';
+    d.style.animation = 'enter-drift ' + DUR + 'ms cubic-bezier(.33,0,.2,1) both';
+    d.style.animationDelay = delay;
+    g.style.animation = 'enter-glitch ' + DUR + 'ms steps(1, end) both';
+    g.style.animationDelay = delay;
+
+    layer.appendChild(g);
+  }
+
+  document.body.appendChild(layer);
+  setTimeout(function () { layer.remove(); }, DUR + 320);
+})();
+
 // 커서: 노란 원을 실제 요소로 그려 포인터를 따라가게 한다
 // (마우스가 있는 환경에서만 — 터치 기기는 기본 동작 유지)
 if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {

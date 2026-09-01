@@ -162,6 +162,79 @@ a {
   opacity: 0.5;
 }
 
+/* ---------- 페이지 진입 전환: 노란 점이 글리치와 함께 잠깐 스쳤다 사라짐 ----------
+   바깥 .g = 위치와 글리치(위치 튐·깜빡임), 안쪽 .d = 원과 미세한 흐름 */
+
+.enter-dots {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.enter-dots .g {
+  position: absolute;
+  will-change: transform, opacity;
+}
+
+.enter-dots .d {
+  display: block;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #FFFB7C;
+  will-change: transform, opacity;
+}
+
+/* 점마다 다른 방향으로 아주 조금만 흐르며 나타났다 사라진다 */
+@keyframes enter-drift {
+  0%   { transform: translate(var(--fx), var(--fy)); opacity: 0; }
+  30%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)); opacity: 0; }
+}
+
+/* 글리치: 보간 없이 프레임이 툭툭 끊기도록 steps(1) */
+@keyframes enter-glitch {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  7%   { transform: translate(3px, -1px); opacity: 1; }
+  13%  { transform: translate(-2px, 1px); opacity: 0.25; }
+  19%  { transform: translate(2px, 0); opacity: 1; }
+  25%  { transform: translate(-1px, -2px); opacity: 0.55; }
+  31%  { transform: translate(1px, 1px); opacity: 1; }
+  37%  { transform: translate(0, 0); opacity: 0.8; }
+  43%  { transform: translate(0, 0); opacity: 1; }
+  100% { transform: translate(0, 0); opacity: 1; }
+}
+
+/* 홈은 이미 점이 있으므로 오버레이 대신 그 점들이 등장할 때만 같은 글리치를 입힌다.
+   drift(무한 떠다님)는 transform을, 아래 flicker는 opacity만 건드려 서로 충돌하지 않는다. */
+
+@keyframes enter-flicker {
+  0%   { opacity: 0; }
+  7%   { opacity: 1; }
+  13%  { opacity: 0.25; }
+  19%  { opacity: 1; }
+  25%  { opacity: 0.55; }
+  31%  { opacity: 1; }
+  37%  { opacity: 0.8; }
+  43%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+/* 점 무리 전체가 한 번 미세하게 튄다 (transform만) */
+@keyframes enter-jitter {
+  0%   { transform: translate(0, 0); }
+  7%   { transform: translate(3px, -1px); }
+  13%  { transform: translate(-2px, 1px); }
+  19%  { transform: translate(2px, 0); }
+  25%  { transform: translate(-1px, -2px); }
+  31%  { transform: translate(1px, 1px); }
+  37%  { transform: translate(0, 0); }
+  100% { transform: translate(0, 0); }
+}
+
 /* ---------- 홈: 고정 배경 (흰 바탕 + 노란 원 산포) ----------
    스크롤해도 원들은 제자리에 있고 콘텐츠가 그 위로 올라옴 */
 
@@ -803,7 +876,7 @@ img.detail-image {
 
   /* 공통 여백 */
   .container {
-    padding: 0 20px;
+    padding: 0 18px;
   }
 
   .nav-bar {
@@ -837,7 +910,8 @@ img.detail-image {
   }
 
   .hero .dot,
-  .hero-image .dot {
+  .hero-image .dot,
+  .enter-dots .d {
     width: 20px;
     height: 20px;
   }
