@@ -290,10 +290,32 @@ html.snap-scroll .footer {
   grid-area: name;
 }
 
-.project-grid.single-column .project-card .thumb {
+.project-grid.single-column .project-card .thumb,
+.project-grid.single-column .project-card .thumb-link {
   grid-area: thumb;
+}
+
+.project-grid.single-column .project-card .thumb {
   height: 680px;
   margin: 0;
+}
+
+.thumb-link {
+  display: block;
+}
+
+/* 프로젝트 리스트 화면: 호버 효과는 이미지에만, 글자는 그대로 */
+.project-grid.single-column .project-card,
+.project-grid.single-column .project-card:hover {
+  opacity: 1;
+}
+
+.project-grid.single-column .thumb {
+  transition: opacity 0.2s;
+}
+
+.project-grid.single-column .thumb:hover {
+  opacity: 0.5;
 }
 
 .project-grid.single-column .project-card .meta {
@@ -495,6 +517,51 @@ html.snap-scroll .footer {
 
 .pn-nav a.next {
   text-align: right;
+}
+
+/* ---------- Contact 모달 ---------- */
+
+.contact-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contact-overlay[hidden] {
+  display: none;
+}
+
+.contact-modal {
+  position: relative;
+  background: var(--bg);
+  padding: 48px;
+  width: min(480px, 90vw);
+}
+
+.contact-modal .contact-title {
+  font-size: var(--fs-24);
+  margin-bottom: 24px;
+}
+
+.contact-modal .credits {
+  margin-bottom: 0;
+}
+
+.contact-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: var(--fs-24);
+  color: var(--ink);
+  cursor: pointer;
+  line-height: 1;
 }
 
 /* ---------- 푸터 ---------- */

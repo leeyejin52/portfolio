@@ -27,18 +27,22 @@ document.addEventListener('mousemove', function (e) {
   chip.style.transform = 'translate(' + (e.clientX + 16) + 'px, ' + (e.clientY + 16) + 'px)';
 });
 
-document.querySelectorAll('.project-card').forEach(function (el) {
+// 프로젝트 리스트 화면에서는 이미지 위에서만, 그 외에는 카드 전체에서 배지 표시
+var chipSelector = document.querySelector('.work-grid') ? '.project-card .thumb' : '.project-card';
+document.querySelectorAll(chipSelector).forEach(function (el) {
   el.addEventListener('mouseenter', function () { chip.classList.add('on'); });
   el.addEventListener('mouseleave', function () { chip.classList.remove('on'); });
 });
 
-// 메뉴가 곧 필터: ?type=논문 / ?year=2025 로 열면 해당 프로젝트 카드만 남김
+// 전체 프로젝트 페이지(projects.html)는 항상 1열 나열 + 스냅.
+// 메뉴의 유형·연도(?type= / ?year=)로 들어오면 그 조건에 맞는 것만 남김.
 var params = new URLSearchParams(location.search);
 var filterType = params.get('type');
 var filterYear = params.get('year');
+var isProjectsPage = !!document.querySelector('.work-grid');
 
-if (filterType || filterYear) {
-  // 필터로 들어온 화면은 무조건 1열 정렬
+if (isProjectsPage) {
+  // 1열 정렬 (필터 유무와 무관)
   document.querySelectorAll('.project-grid').forEach(function (grid) {
     grid.classList.add('single-column');
   });
@@ -85,3 +89,36 @@ if (filterType || filterYear) {
     document.documentElement.classList.add('snap-scroll');
   }
 }
+
+// Contact 모달: 어디서든 Contact를 누르면 연락처 정보 표시
+var overlay = document.createElement('div');
+overlay.className = 'contact-overlay';
+overlay.hidden = true;
+overlay.innerHTML =
+  '<div class="contact-modal">' +
+  '<button class="contact-close" aria-label="Close">×</button>' +
+  '<p class="contact-title">Contact</p>' +
+  '<dl class="credits">' +
+  '<dt>Email</dt><dd><a href="mailto:hello@example.com">hello@example.com</a></dd>' +
+  '<dt>Phone</dt><dd>전화번호가 들어갈 자리</dd>' +
+  '<dt>LinkedIn</dt><dd><a href="#">링크가 들어갈 자리</a></dd>' +
+  '<dt>Instagram</dt><dd><a href="#">링크가 들어갈 자리</a></dd>' +
+  '</dl></div>';
+document.body.appendChild(overlay);
+
+document.querySelectorAll('a').forEach(function (a) {
+  if (a.textContent.trim() === 'Contact') {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      overlay.hidden = false;
+    });
+  }
+});
+
+overlay.addEventListener('click', function (e) {
+  if (e.target === overlay || e.target.classList.contains('contact-close')) overlay.hidden = true;
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') overlay.hidden = true;
+});
