@@ -17,22 +17,6 @@ document.querySelector('.navicon').addEventListener('click', function () {
   document.getElementById('nav-index').toggleAttribute('hidden');
 });
 
-// 커서를 따라다니는 노란 점 (프로젝트 위에서만 표시)
-var chip = document.createElement('div');
-chip.className = 'cursor-chip';
-document.body.appendChild(chip);
-
-document.addEventListener('mousemove', function (e) {
-  chip.style.transform = 'translate(' + (e.clientX + 16) + 'px, ' + (e.clientY + 16) + 'px)';
-});
-
-function bindChip(selector) {
-  document.querySelectorAll(selector).forEach(function (el) {
-    el.addEventListener('mouseenter', function () { chip.classList.add('on'); });
-    el.addEventListener('mouseleave', function () { chip.classList.remove('on'); });
-  });
-}
-
 // Contact 모달: 어디서든 Contact를 누르면 연락처 정보 표시
 var overlay = document.createElement('div');
 overlay.className = 'contact-overlay';
@@ -108,7 +92,6 @@ if (homeGrid || listGrid || detailRoot) {
             '<p class="meta">' + esc(p.category) + ' · ' + esc(p.periodLabel) + '</p>' +
             '</a>';
         }).join('');
-        bindChip('.project-card');
       }
 
       // 리스트: 1열 나열, 이미지만 링크. 메뉴의 유형·연도가 곧 필터
@@ -133,7 +116,6 @@ if (homeGrid || listGrid || detailRoot) {
             '<p class="meta">' + esc(p.category) + ' · ' + esc(p.periodLabel) + '</p>' +
             '</div>';
         }).join('');
-        bindChip('.project-card .thumb');
 
         // 스냅: 스크롤이 멈추면 가장 가까운 프로젝트가 화면 중앙으로
         if (lenis) {
@@ -239,8 +221,6 @@ if (homeGrid || listGrid || detailRoot) {
         }).observe(detailRoot.querySelector('.pn-nav'));
       }
     });
-} else {
-  bindChip('.project-card');
 }
 
 // 수상 내역 — data/awards.json 이 정본. Pages CMS에서 그 파일을 수정하면 이 페이지가 바뀐다.

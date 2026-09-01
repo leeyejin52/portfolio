@@ -118,24 +118,22 @@ a {
   padding: 0 6px;
 }
 
-/* ---------- 커서 인터랙션 (quangdinh 참고) ---------- */
+/* ---------- 커서: 사이트 전체를 노란 원으로 ---------- */
 
-.cursor-chip {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #FFFB7C;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s;
-  z-index: 10;
+:root {
+  --cursor-dot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='10' fill='%23FFFB7C'/%3E%3C/svg%3E") 10 10, auto;
 }
 
-.cursor-chip.on {
-  opacity: 1;
+html,
+body,
+a,
+button,
+input,
+textarea,
+select,
+label,
+[role="button"] {
+  cursor: var(--cursor-dot);
 }
 
 .project-card {
@@ -292,6 +290,11 @@ html.snap-scroll .footer {
 .project-grid.single-column .project-card .thumb,
 .project-grid.single-column .project-card .thumb-link {
   grid-area: thumb;
+}
+
+.project-grid.single-column .project-card .thumb,
+.project-grid.single-column .project-card .thumb-link {
+  min-width: 0;
 }
 
 .project-grid.single-column .project-card .thumb {
@@ -452,17 +455,6 @@ img.detail-image {
 
 .career-row .career-org a {
   text-decoration: underline;
-}
-
-@media (max-width: 720px) {
-  .career-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .career-row .period {
-    text-align: left;
-  }
 }
 
 /* ---------- 프로젝트 상세: 대형 썸네일 → 정보 → 그래프 → 큰 이미지들 ---------- */
@@ -748,5 +740,201 @@ img.detail-image {
   .footer-top {
     flex-direction: column;
     gap: 32px;
+  }
+}
+
+
+/* 태블릿 이하(1024px): 프로젝트 목록 3열 → 세로 스택, 스냅 해제 */
+
+@media (max-width: 1024px) {
+  .project-grid.single-column .project-card {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "thumb"
+      "name"
+      "meta";
+    gap: 12px;
+    padding: 32px 0;
+    min-height: auto;
+    scroll-snap-align: none;
+  }
+
+  .project-grid.single-column .project-card .thumb {
+    height: auto;
+    aspect-ratio: 7 / 5;
+  }
+
+  .project-grid.single-column .project-card .meta {
+    text-align: left;
+  }
+}
+
+
+/* ============================================
+   모바일 (720px 이하) — 여백·메뉴·목록·푸터 일괄 조정
+   ============================================ */
+
+@media (max-width: 720px) {
+
+  /* 공통 여백 */
+  .container {
+    padding: 0 20px;
+  }
+
+  .nav-bar {
+    height: 60px;
+  }
+
+  /* 메뉴: 3컬럼 → 세로 스택, 태그는 가로로 흐르게 */
+  .nav-index {
+    padding: 8px 0 40px;
+  }
+
+  .nav-index .container {
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .group-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .group-links a {
+    white-space: nowrap;
+  }
+
+  /* 홈 인트로: 화면 높이 강제 해제, 헤드라인 축소 */
+  .hero {
+    min-height: auto;
+    padding: 40px 0 64px;
+  }
+
+  .hero h1 {
+    font-size: 28pt;
+  }
+
+  .hero .dot,
+  .hero-image .dot {
+    width: 20px;
+    height: 20px;
+  }
+
+  .section {
+    padding: 32px 0 64px;
+  }
+
+  .page-title {
+    padding: 40px 0 32px;
+  }
+
+  /* 경력·수상: 정보와 날짜를 세로로 */
+  .career-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 20px 0;
+  }
+
+  .career-row .period {
+    text-align: left;
+  }
+
+  .career-group {
+    padding-bottom: 64px;
+  }
+
+  /* 프로젝트 상세 */
+  .detail-hero-thumb {
+    height: 56vh;
+  }
+
+  .detail-info {
+    padding: 40px 0 24px;
+  }
+
+  .detail-graph {
+    padding: 40px 0 64px;
+  }
+
+  .detail-header {
+    padding: 56px 0;
+  }
+
+  .detail-body {
+    padding: 40px 0;
+  }
+
+  .detail-image,
+  img.detail-image {
+    height: 220px;
+    margin-bottom: 32px;
+  }
+
+  /* 좌우 플로팅 이전·다음은 본문과 겹치므로 숨김 (하단 버튼으로 이동) */
+  .pn-float {
+    display: none;
+  }
+
+  .pn-nav {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .pn-nav a.next {
+    text-align: left;
+  }
+
+  /* 라벨-값 목록: 라벨 폭 축소, 긴 주소 줄바꿈 */
+  .credits {
+    grid-template-columns: 88px 1fr;
+    margin-bottom: 32px;
+  }
+
+  .credits dd {
+    overflow-wrap: anywhere;
+  }
+
+  .contact-modal {
+    padding: 40px 24px 32px;
+  }
+
+  /* 모달은 폭이 좁아 라벨-값을 위아래로 */
+  .contact-modal .credits {
+    grid-template-columns: 1fr;
+    row-gap: 0;
+  }
+
+  .contact-modal .credits dt {
+    margin-top: 16px;
+  }
+
+  .contact-modal .credits dt:first-of-type {
+    margin-top: 0;
+  }
+
+  /* 푸터 */
+  .footer {
+    margin-top: 64px;
+  }
+
+  .footer-top {
+    flex-direction: column;
+    gap: 32px;
+    padding: 48px 0 40px;
+  }
+
+  .footer-top .footer-col,
+  .footer-col p {
+    max-width: none;
+  }
+
+  .footer-logo-circle {
+    width: 88px;
+    height: 88px;
+  }
+
+  .footer-bottom {
+    padding: 16px 0 32px;
   }
 }
