@@ -118,22 +118,40 @@ a {
   padding: 0 6px;
 }
 
-/* ---------- 커서: 사이트 전체를 노란 원으로 ---------- */
+/* ---------- 커서: 사이트 전체를 노란 원으로 ----------
+   SVG 커서(url())는 브라우저가 저해상도로 래스터해 가장자리가 거칠어진다.
+   실제 요소를 포인터 위치에 붙여 그리면 어떤 해상도에서도 매끄럽다.
+   기본 커서 숨김은 JS가 .custom-cursor를 붙인 뒤에만 적용(JS 실패 시 커서 사라짐 방지). */
 
-:root {
-  --cursor-dot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='10' fill='%23FFFB7C'/%3E%3C/svg%3E") 10 10, auto;
+.custom-cursor,
+.custom-cursor body,
+.custom-cursor a,
+.custom-cursor button,
+.custom-cursor input,
+.custom-cursor textarea,
+.custom-cursor select,
+.custom-cursor label,
+.custom-cursor [role="button"] {
+  cursor: none;
 }
 
-html,
-body,
-a,
-button,
-input,
-textarea,
-select,
-label,
-[role="button"] {
-  cursor: var(--cursor-dot);
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: #FFFB7C;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  will-change: transform;
+}
+
+.cursor-dot.on {
+  opacity: 1;
 }
 
 .project-card {
@@ -776,6 +794,13 @@ img.detail-image {
 
 @media (max-width: 720px) {
 
+  /* 글자 크기: 본문 14px, 큰 제목 28pt */
+  :root {
+    --fs-12: 14px;
+    --fs-14: 14px;
+    --fs-52: 28pt;
+  }
+
   /* 공통 여백 */
   .container {
     padding: 0 20px;
@@ -809,10 +834,6 @@ img.detail-image {
   .hero {
     min-height: auto;
     padding: 40px 0 64px;
-  }
-
-  .hero h1 {
-    font-size: 28pt;
   }
 
   .hero .dot,

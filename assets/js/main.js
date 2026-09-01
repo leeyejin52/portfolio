@@ -12,6 +12,24 @@ if (window.Lenis) {
   });
 }
 
+// 커서: 노란 원을 실제 요소로 그려 포인터를 따라가게 한다
+// (마우스가 있는 환경에서만 — 터치 기기는 기본 동작 유지)
+if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  var cursorDot = document.createElement('div');
+  cursorDot.className = 'cursor-dot';
+  document.body.appendChild(cursorDot);
+  document.documentElement.classList.add('custom-cursor');
+
+  document.addEventListener('mousemove', function (e) {
+    cursorDot.style.transform = 'translate3d(' + e.clientX + 'px, ' + e.clientY + 'px, 0)';
+    cursorDot.classList.add('on');
+  });
+
+  document.addEventListener('mouseleave', function () {
+    cursorDot.classList.remove('on');
+  });
+}
+
 // 햄버거 메뉴 토글
 document.querySelector('.navicon').addEventListener('click', function () {
   document.getElementById('nav-index').toggleAttribute('hidden');
