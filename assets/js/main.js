@@ -44,7 +44,7 @@ overlay.innerHTML =
   '<p class="contact-title">Contact</p>' +
   '<dl class="credits">' +
   '<dt>Email</dt><dd><a href="mailto:hello@example.com">hello@example.com</a></dd>' +
-  '<dt>Phone</dt><dd>전화번호가 들어갈 자리</dd>' +
+  '<dt>Phone</dt><dd><a href="tel:+821057911507">+82 10-5791-1507</a></dd>' +
   '<dt>LinkedIn</dt><dd><a href="#">링크가 들어갈 자리</a></dd>' +
   '<dt>Instagram</dt><dd><a href="#">링크가 들어갈 자리</a></dd>' +
   '</dl></div>';
@@ -207,3 +207,12 @@ if (homeGrid || listGrid || detailRoot) {
 } else {
   bindChip('.project-card');
 }
+
+// 푸터 Back to top: 맨 위로 부드럽게
+document.querySelectorAll('.back-top').forEach(function (a) {
+  a.addEventListener('click', function (e) {
+    e.preventDefault();
+    if (lenis) lenis.scrollTo(0, { duration: 1.2 });
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});

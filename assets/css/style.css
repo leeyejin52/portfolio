@@ -574,19 +574,68 @@ img.detail-image {
   line-height: 1;
 }
 
-/* ---------- 푸터 ---------- */
+/* ---------- 푸터 (apartamento 참고: 선 없이 타이포만, 4컬럼 + 하단 바) ---------- */
 
 .footer {
-  padding: 32px 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--fs-12);
+  margin-top: 96px;
 }
 
-.footer .container {
+/* 하이퍼링크는 밑줄로 표시 */
+.footer a {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* 열 시작점이 아니라 내용물 사이 간격이 균등해 보이도록 배치 */
+.footer-top {
   display: flex;
   justify-content: space-between;
-  font-size: var(--fs-12);
+  gap: 48px;
+  padding: 72px 0 96px;
 }
 
-.footer .links {
+.footer-top .footer-col {
+  max-width: 280px;
+}
+
+.footer-col p {
+  margin-bottom: 16px;
+  max-width: 260px;
+}
+
+/* 로고 자리: 검은 선 원 (추후 이미지로 교체) */
+.footer-logo-circle {
+  width: 120px;
+  height: 120px;
+  border: 1.5pt solid var(--ink);
+  border-radius: 50%;
+  margin-bottom: 16px;
+}
+
+.footer-label {
+  margin-bottom: 4px;
+}
+
+.footer-links-col {
   display: flex;
-  gap: 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 20px 0 32px;
+}
+
+@media (max-width: 1024px) {
+  .footer-top {
+    flex-direction: column;
+    gap: 32px;
+  }
 }
