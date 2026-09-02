@@ -395,10 +395,10 @@ if (homeGrid || listGrid || detailRoot) {
 
         // 데스크톱: 화면에 붙어 있는 무대 하나. 제목·이미지·메타 자리는 고정되고
         // 스크롤은 몇 번째 프로젝트를 보여줄지만 정한다. 이미지는 프레임 안에서 밀려 올라오고,
-        // 제목·메타는 배경 점이 등장할 때와 같은 글리치로 갈아끼워진다.
+        // 제목·메타는 한 줄 창 안에서 위로 굴러 넘어가는 롤링 텍스트로 갈아끼워진다.
         var renderStage = function () {
           var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          var GLITCH = 900;   // 배경 점 등장 글리치와 같은 길이
+          var ROLL = 600;     // 텍스트 롤링 길이(ms) — CSS 애니메이션과 맞춘다
           var PUSH = 800;     // 이미지 밀어올림 길이(ms) — CSS transition과 맞춘다
           var STEP = 0.45;    // 한 장 넘기는 데 필요한 스크롤 = 화면 높이의 비율
 
@@ -414,12 +414,34 @@ if (homeGrid || listGrid || detailRoot) {
           var metaEl = listGrid.querySelector('.stage-meta');
           var current = -1;
 
-          var glitch = function (el, text) {
-            el.textContent = text;
-            if (reduce) return;
-            el.style.animation = 'none';
-            void el.offsetWidth;   // 리플로우를 강제해 애니메이션을 처음부터 다시 돈다
-            el.style.animation = 'enter-glitch ' + GLITCH + 'ms steps(1, end) both';
+          // 롤링: 새 글줄은 아래(되돌릴 땐 위)에서 올라와 자리를 잡고, 이전 글줄은 반대로 밀려 나간다.
+          // 창(el)은 overflow hidden이라 밖으로 나간 글줄은 잘려 보인다.
+          var roll = function (el, text, dir) {
+            var line = document.createElement('span');
+            line.className = 'roll-line';
+            line.textContent = text;
+            el.querySelectorAll('.roll-out').forEach(function (o) { o.remove(); });
+            var old = el.querySelector('.roll-line');
+            if (reduce) {
+              if (old) old.remove();
+              el.appendChild(line);
+              return;
+            }
+            // 두 글줄의 줄 수가 다르면 각자 자기 높이만큼 움직이다 창 안에서 겹친다.
+            // 둘 다 큰 쪽 높이만큼 같은 거리를 움직이게 해 교차하지 않도록 한다.
+            var oldH = old ? old.offsetHeight : 0;
+            if (old) {
+              old.classList.remove('in-up', 'in-down');
+              old.classList.add('roll-out');
+            }
+            el.appendChild(line);
+            var dist = Math.max(oldH, line.offsetHeight);
+            el.style.setProperty('--roll', dist + 'px');
+            if (old) {
+              old.classList.add(dir > 0 ? 'out-up' : 'out-down');
+              setTimeout(function () { old.remove(); }, ROLL);
+            }
+            line.classList.add(dir > 0 ? 'in-up' : 'in-down');
           };
 
           var show = function (idx, animate) {
@@ -427,8 +449,8 @@ if (homeGrid || listGrid || detailRoot) {
             var dir = idx > current ? 1 : -1;   // 아래로 넘기면 1, 위로 되돌리면 -1
             current = idx;
             frame.href = detailURL(p);
-            glitch(nameEl, p.title);
-            glitch(metaEl, p.category + ' · ' + p.periodLabel);
+            roll(nameEl, p.title, dir);
+            roll(metaEl, p.category + ' · ' + p.periodLabel, dir);
 
             var olds = Array.prototype.slice.call(frame.querySelectorAll('.thumb'));
             var tmp = document.createElement('div');

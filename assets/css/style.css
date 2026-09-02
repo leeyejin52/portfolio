@@ -575,6 +575,36 @@ img.detail-image {
   font-size: var(--fs-12);
 }
 
+/* 롤링 텍스트: 제목·메타는 창이고, 글줄이 그 안에서 세로로 굴러 넘어간다 */
+.stage h3,
+.stage .meta {
+  position: relative;
+  overflow: hidden;
+}
+
+.roll-line {
+  display: block;
+}
+
+/* 나가는 글줄은 자리에서 떠서 새 글줄과 겹친 채 밀려 나간다 */
+.roll-line.roll-out {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.roll-line.in-up   { animation: roll-in-up 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.roll-line.out-up  { animation: roll-out-up 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.roll-line.in-down { animation: roll-in-down 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.roll-line.out-down { animation: roll-out-down 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+/* --roll: 이동 거리. JS가 나가는 글줄과 들어오는 글줄 중 큰 높이로 정한다(둘이 같은 속도로 움직여야 겹치지 않음) */
+@keyframes roll-in-up    { from { transform: translateY(var(--roll, 100%)); }        to { transform: translateY(0); } }
+@keyframes roll-out-up   { from { transform: translateY(0); } to { transform: translateY(calc(-1 * var(--roll, 100%))); } }
+@keyframes roll-in-down  { from { transform: translateY(calc(-1 * var(--roll, 100%))); } to { transform: translateY(0); } }
+@keyframes roll-out-down { from { transform: translateY(0); }        to { transform: translateY(var(--roll, 100%)); } }
+
 /* 프레임: 바깥은 잘려 보이고, 이미지가 그 안에서 밀려 올라온다 */
 .stage-frame {
   grid-area: thumb;
