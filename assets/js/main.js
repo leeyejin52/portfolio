@@ -377,14 +377,118 @@ if (homeGrid || listGrid || detailRoot) {
           return typeOk && yearOk;
         });
 
-        listGrid.classList.add('single-column');
-        listGrid.innerHTML = shown.map(function (p) {
-          return '<div class="project-card">' +
-            '<a class="thumb-link" href="' + detailURL(p) + '">' + thumbHTML(p) + '</a>' +
-            '<h3>' + esc(p.title) + '</h3>' +
-            '<p class="meta">' + esc(p.category) + ' · ' + esc(p.periodLabel) + '</p>' +
+        var section = listGrid.closest('.work-grid');
+        var stageMQ = window.matchMedia('(min-width: 1025px)');
+
+        // 태블릿 이하: 카드가 세로로 이어지는 목록
+        var renderRows = function () {
+          listGrid.className = 'project-grid single-column';
+          listGrid.innerHTML = shown.map(function (p) {
+            return '<div class="project-card">' +
+              '<a class="thumb-link" href="' + detailURL(p) + '">' + thumbHTML(p) + '</a>' +
+              '<h3>' + esc(p.title) + '</h3>' +
+              '<p class="meta">' + esc(p.category) + ' · ' + esc(p.periodLabel) + '</p>' +
+              '</div>';
+          }).join('');
+          if (section) section.classList.remove('is-stage');
+        };
+
+        // 데스크톱: 화면에 붙어 있는 무대 하나. 제목·이미지·메타 자리는 고정되고
+        // 스크롤은 몇 번째 프로젝트를 보여줄지만 정한다. 이미지는 프레임 안에서 밀려 올라오고,
+        // 제목·메타는 배경 점이 등장할 때와 같은 글리치로 갈아끼워진다.
+        var renderStage = function () {
+          var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          var GLITCH = 900;   // 배경 점 등장 글리치와 같은 길이
+          var PUSH = 800;     // 이미지 밀어올림 길이(ms) — CSS transition과 맞춘다
+          var STEP = 0.45;    // 한 장 넘기는 데 필요한 스크롤 = 화면 높이의 비율
+
+          listGrid.className = 'stage-track';
+          if (section) section.classList.add('is-stage');
+          listGrid.innerHTML = '<div class="stage">' +
+            '<h3 class="stage-name"></h3>' +
+            '<a class="stage-frame thumb-link" href="#"></a>' +
+            '<p class="meta stage-meta"></p>' +
             '</div>';
-        }).join('');
+          var nameEl = listGrid.querySelector('.stage-name');
+          var frame = listGrid.querySelector('.stage-frame');
+          var metaEl = listGrid.querySelector('.stage-meta');
+          var current = -1;
+
+          var glitch = function (el, text) {
+            el.textContent = text;
+            if (reduce) return;
+            el.style.animation = 'none';
+            void el.offsetWidth;   // 리플로우를 강제해 애니메이션을 처음부터 다시 돈다
+            el.style.animation = 'enter-glitch ' + GLITCH + 'ms steps(1, end) both';
+          };
+
+          var show = function (idx, animate) {
+            var p = shown[idx];
+            var dir = idx > current ? 1 : -1;   // 아래로 넘기면 1, 위로 되돌리면 -1
+            current = idx;
+            frame.href = detailURL(p);
+            glitch(nameEl, p.title);
+            glitch(metaEl, p.category + ' · ' + p.periodLabel);
+
+            var olds = Array.prototype.slice.call(frame.querySelectorAll('.thumb'));
+            var tmp = document.createElement('div');
+            tmp.innerHTML = thumbHTML(p);
+            var img = tmp.firstChild;
+
+            if (!animate || reduce) {
+              olds.forEach(function (o) { o.remove(); });
+              frame.appendChild(img);
+              return;
+            }
+            img.classList.add(dir > 0 ? 'from-below' : 'from-above');
+            frame.appendChild(img);
+            void img.offsetWidth;
+            img.classList.remove('from-below', 'from-above');
+            olds.forEach(function (o) {
+              o.classList.remove('from-below', 'from-above', 'to-above', 'to-below');
+              o.classList.add(dir > 0 ? 'to-above' : 'to-below');
+              setTimeout(function () { o.remove(); }, PUSH);
+            });
+          };
+
+          var trackTop = 0;
+          var stepPx = function () { return window.innerHeight * STEP; };
+          var measure = function () {
+            // 트랙 높이 = (장 수 - 1) × 한 장 스크롤 + 무대 높이. 마지막 장까지 무대가 붙어 있게
+            listGrid.style.height = ((shown.length - 1) * stepPx() + window.innerHeight) + 'px';
+            trackTop = listGrid.getBoundingClientRect().top + window.scrollY;
+          };
+          var update = function () {
+            var rel = window.scrollY - trackTop;
+            var idx = Math.round(rel / stepPx());   // 한 장 스크롤의 절반을 넘기면 다음 장
+            idx = Math.max(0, Math.min(shown.length - 1, idx));
+            if (idx !== current) show(idx, true);   // 처음 열 때도 첫 카드가 아래에서 올라온다
+          };
+          var onResize = function () { measure(); update(); };
+
+          measure();
+          update();
+          if (lenis) lenis.on('scroll', update);
+          window.addEventListener('scroll', update, { passive: true });
+          window.addEventListener('resize', onResize);
+
+          return function () {
+            if (lenis) lenis.off('scroll', update);
+            window.removeEventListener('scroll', update);
+            window.removeEventListener('resize', onResize);
+            listGrid.style.height = '';
+          };
+        };
+
+        var stageCleanup = null;
+        var renderList = function () {
+          if (stageCleanup) { stageCleanup(); stageCleanup = null; }
+          if (stageMQ.matches && shown.length) stageCleanup = renderStage();
+          else renderRows();
+        };
+        renderList();
+        if (stageMQ.addEventListener) stageMQ.addEventListener('change', renderList);
+        else stageMQ.addListener(renderList);
       }
 
       // 상세: detail.html?id=N — 템플릿 한 장으로 모든 프로젝트 표시

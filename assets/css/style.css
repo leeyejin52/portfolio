@@ -538,6 +538,84 @@ img.detail-image {
   font-size: var(--fs-12);
 }
 
+/* ---------- Work(데스크톱): 화면에 붙은 무대 — 자리는 고정, 내용만 교체 ----------
+   트랙 높이 = 프로젝트 수 × 화면 높이. 무대는 내비 아래에 붙어 있고 스크롤은 몇 번째 장인지만 정한다. */
+
+.work-grid.is-stage {
+  padding: 0 0 96px;
+}
+
+.stage-track {
+  position: relative;
+  margin-top: -72px;   /* 내비 높이만큼 끌어올려 무대가 화면 맨 위(내비 뒤)에서 시작한다 */
+}
+
+/* 무대 = 화면 전체 높이. 내비는 sticky라 위에 그대로 덮이고, 프레임은 뷰포트 정중앙에 온다 */
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 160px 1fr 160px;
+  grid-template-areas: "name thumb meta";
+  align-items: center;
+  gap: 32px;
+}
+
+.stage h3 {
+  grid-area: name;
+  font-size: var(--fs-14);
+  font-weight: 400;
+}
+
+.stage .meta {
+  grid-area: meta;
+  text-align: right;
+  margin: 0;
+  font-size: var(--fs-12);
+}
+
+/* 프레임: 바깥은 잘려 보이고, 이미지가 그 안에서 밀려 올라온다 */
+.stage-frame {
+  grid-area: thumb;
+  position: relative;
+  display: block;
+  min-width: 0;
+  height: min(680px, calc(100vh - 192px));   /* 위아래로 내비 높이 + 여백은 남긴다 */
+  overflow: hidden;
+}
+
+.stage-frame .thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  display: block;
+  object-fit: cover;
+  background: var(--surface);
+  transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.2s;
+}
+
+/* 카드와 카드 사이에 흰 틈(--seam)을 두고 이동해, 같은 색 카드끼리 바뀌어도 올라오는 게 보인다 */
+.stage-frame {
+  --seam: 32px;
+}
+
+.stage-frame .thumb.from-below,
+.stage-frame .thumb.to-below {
+  transform: translateY(calc(100% + var(--seam)));
+}
+
+.stage-frame .thumb.from-above,
+.stage-frame .thumb.to-above {
+  transform: translateY(calc(-100% - var(--seam)));
+}
+
+.stage-frame:hover .thumb {
+  opacity: 0.5;
+}
+
 /* ---------- Work: 프로젝트 카드 나열 ---------- */
 
 .page-title {
