@@ -197,6 +197,24 @@ a {
   opacity: 1;
 }
 
+/* 배경 점 위에 있거나 잡고 있을 때: 링이 점을 감싸는 크기로 커진다 */
+.cursor-dot {
+  transition: width 0.15s, height 0.15s, margin 0.15s;
+}
+
+.cursor-dot.grab {
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+}
+
+/* 점을 끄는 동안 글자가 드래그 선택되지 않게 */
+.dragging-dot,
+.dragging-dot body {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .project-card {
   transition: opacity 0.2s;
 }
@@ -340,6 +358,11 @@ a {
 @keyframes drift {
   from { transform: translate(0, 0); }
   to { transform: translate(var(--dx, 20px), var(--dy, -20px)); }
+}
+
+/* 잡고 있는 점: 나머지 점 위에 그려진다 */
+.hero-image .dot.held {
+  z-index: 1;
 }
 
 /* ---------- 홈: 인트로 (고정 배경 위 첫 화면) ---------- */

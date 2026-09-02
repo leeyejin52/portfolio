@@ -109,7 +109,9 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
   document.body.appendChild(cursorDot);
   document.documentElement.classList.add('custom-cursor');
 
-  document.addEventListener('mousemove', function (e) {
+  // pointermove로 듣는다 — 점을 잡을 때 pointerdown 기본 동작을 막으면 mousemove가 끊기기 때문
+  document.addEventListener('pointermove', function (e) {
+    if (e.pointerType !== 'mouse') return;
     cursorDot.style.transform = 'translate3d(' + e.clientX + 'px, ' + e.clientY + 'px, 0)';
     cursorDot.classList.add('on');
   });
@@ -118,6 +120,139 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
     cursorDot.classList.remove('on');
   });
 }
+
+// 배경 점 잡아 옮기기 — 마우스 환경에서만
+// 배경 레이어는 클릭을 받지 않으므로(콘텐츠 가림 방지) 포인터 위치로 어느 점 위인지 직접 판정한다.
+// 잡으면 떠다니기(drift)를 멈추고 따라오게 하고, 놓으면 관성으로 미끄러진 뒤 그 자리에서 다시 떠다닌다.
+(function () {
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  var layer = document.querySelector('.hero-image');
+  if (!layer) return;
+  var dots = Array.prototype.slice.call(layer.querySelectorAll('.dot'));
+  if (!dots.length) return;
+
+  var cursor = document.querySelector('.cursor-dot');
+  var SLOP = 4;          // 점 가장자리 바깥 여유(px)
+  var FRICTION = 0.94;   // 프레임당 속도 감쇠
+  var BOUNCE = 0.55;     // 화면 가장자리에 부딪힐 때 되튀는 비율
+
+  // 놓은 뒤 drift를 다시 걸 때 쓸 주기를 미리 기억해 둔다 (animation을 none으로 지우면 사라지므로)
+  dots.forEach(function (d) {
+    d.dataset.drift = getComputedStyle(d).animationDuration.split(',')[0].trim() || '10s';
+  });
+
+  var held = null, offX = 0, offY = 0;
+  var x = 0, y = 0, px = 0, py = 0, vx = 0, vy = 0, lastT = 0;
+  var glide = 0;
+
+  function dotAt(cx, cy) {
+    for (var i = dots.length - 1; i >= 0; i--) {
+      var r = dots[i].getBoundingClientRect();
+      var rad = r.width / 2 + SLOP;
+      var dx = cx - (r.left + r.width / 2), dy = cy - (r.top + r.height / 2);
+      if (dx * dx + dy * dy <= rad * rad) return dots[i];
+    }
+    return null;
+  }
+
+  // 링크·버튼·카드 위에서는 그 요소의 클릭이 우선
+  function overInteractive(el) {
+    return !!(el && el.closest && el.closest('a, button, input, textarea, select, label, [role="button"], .project-card, .nav'));
+  }
+
+  function place(d, nx, ny) {
+    d.style.left = nx + 'px';
+    d.style.top = ny + 'px';
+  }
+
+  function resumeDrift(d) {
+    d.classList.remove('held');
+    d.style.animation = 'drift ' + d.dataset.drift + ' ease-in-out 0s infinite alternate';
+  }
+
+  // 호버: 점 위에 오면 커서 링이 살짝 커진다
+  var hoverPending = false;
+  document.addEventListener('pointermove', function (e) {
+    if (held || hoverPending || !cursor || e.pointerType !== 'mouse') return;
+    hoverPending = true;
+    requestAnimationFrame(function () {
+      hoverPending = false;
+      var on = !overInteractive(e.target) && !!dotAt(e.clientX, e.clientY);
+      cursor.classList.toggle('grab', on);
+    });
+  });
+
+  document.addEventListener('pointerdown', function (e) {
+    if (e.button !== 0 || held || overInteractive(e.target)) return;
+    var d = dotAt(e.clientX, e.clientY);
+    if (!d) return;
+    e.preventDefault();
+    if (glide) { cancelAnimationFrame(glide); glide = 0; }
+
+    // 지금 보이는 자리(애니메이션 포함)를 그대로 고정하고 떠다니기를 멈춘다
+    var r = d.getBoundingClientRect();
+    d.style.animation = 'none';
+    d.style.transform = 'none';
+    place(d, r.left, r.top);
+    layer.appendChild(d);                   // 다른 점 위로 올라오게
+    d.classList.add('held');
+    document.documentElement.classList.add('dragging-dot');
+    if (cursor) cursor.classList.add('grab');
+
+    held = d;
+    offX = e.clientX - r.left;
+    offY = e.clientY - r.top;
+    x = px = r.left; y = py = r.top;
+    vx = vy = 0;
+    lastT = e.timeStamp;
+  });
+
+  document.addEventListener('pointermove', function (e) {
+    if (!held) return;
+    var t = e.timeStamp, dt = Math.max(1, t - lastT);
+    px = x; py = y;
+    x = e.clientX - offX;
+    y = e.clientY - offY;
+    vx = (x - px) / dt;                     // px/ms
+    vy = (y - py) / dt;
+    lastT = t;
+    place(held, x, y);
+  });
+
+  function release() {
+    if (!held) return;
+    var d = held;
+    held = null;
+    document.documentElement.classList.remove('dragging-dot');
+    if (cursor) cursor.classList.remove('grab');
+
+    // 던진 속도로 미끄러지다 멈추면 그 자리에서 다시 떠다닌다
+    var size = d.getBoundingClientRect().width;
+    var prev = performance.now();
+    function step(now) {
+      var dt = Math.min(32, now - prev); prev = now;
+      x += vx * dt; y += vy * dt;
+      var maxX = window.innerWidth - size, maxY = window.innerHeight - size;
+      if (x < 0) { x = 0; vx = -vx * BOUNCE; }
+      if (x > maxX) { x = maxX; vx = -vx * BOUNCE; }
+      if (y < 0) { y = 0; vy = -vy * BOUNCE; }
+      if (y > maxY) { y = maxY; vy = -vy * BOUNCE; }
+      vx *= FRICTION; vy *= FRICTION;
+      place(d, x, y);
+      if (Math.abs(vx) > 0.02 || Math.abs(vy) > 0.02) {
+        glide = requestAnimationFrame(step);
+      } else {
+        glide = 0;
+        resumeDrift(d);
+      }
+    }
+    glide = requestAnimationFrame(step);
+  }
+
+  document.addEventListener('pointerup', release);
+  document.addEventListener('pointercancel', release);
+  window.addEventListener('blur', release);
+})();
 
 // 햄버거 메뉴 토글 — hidden 대신 클래스로 여닫아야 높이 전환이 걸린다
 (function () {
