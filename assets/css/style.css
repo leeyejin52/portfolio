@@ -747,50 +747,53 @@ img.detail-image {
   text-decoration: underline;
 }
 
-/* ---------- Connecting the dots: 생각의 지도 ---------- */
+/* ---------- Connecting the dots: 생각의 지도 (3D) ----------
+   중앙 고리(yejin)를 중심으로 선으로 그린 고리들이 공간에 떠 있고, 끌어서 돌려 본다.
+   캔버스는 투명해서 뒤의 노란 배경 점이 그대로 보인다 */
 
-/* 그림 하나가 한 화면에 들어오도록 폭과 여백을 잡는다 */
 .map-wrap {
-  padding: 104px 0 128px;
+  padding: 24px 0 64px;
 }
 
 .mindmap {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.mindmap .diagram {
-  display: block;
+  position: relative;
   width: 100%;
-  height: auto;
+  height: calc(100vh - 72px - 88px);
+  min-height: 480px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.mindmap:active {
+  cursor: grabbing;
+}
+
+.mindmap canvas {
+  display: block;
+}
+
+/* 글자 층: 캔버스 위에 겹치고, 마우스는 통과시켜 드래그를 막지 않는다 */
+.mindmap .mm-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.mm-label {
+  font-size: var(--fs-12);
+  line-height: 1;
   color: var(--ink);
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.diagram .line {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-}
-
-.diagram .dash {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-dasharray: 3.5 3.5;
-}
-
-.diagram .dot-y {
-  fill: #FFFB7C;
-}
-
-.diagram .dot-k {
-  fill: currentColor;
-}
-
-.diagram .ring {
-  fill: none;          /* 뒤의 배경 점이 그대로 보이도록 */
-  stroke: currentColor;
-  stroke-width: 1.5;
+@media (max-width: 767px) {
+  .mindmap {
+    height: 70vh;   /* 손가락으로 돌리는 영역 아래에 스크롤할 자리를 남긴다 */
+    min-height: 360px;
+  }
 }
 
 /* ---------- 프로젝트 상세: 대형 썸네일 → 정보 → 그래프 → 큰 이미지들 ---------- */

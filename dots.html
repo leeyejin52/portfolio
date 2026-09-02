@@ -145,21 +145,8 @@
 
   <section class="map-wrap">
     <div class="container">
-      <div class="mindmap">
-
-      <svg class="diagram" viewBox="0 0 960 560" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <!-- 큰 원 셋: 지름 290, 삼각으로 놓고 서로 잇는다 -->
-        <circle class="line" cx="200" cy="170" r="145"></circle>
-        <circle class="line" cx="760" cy="170" r="145"></circle>
-        <circle class="line" cx="480" cy="400" r="145"></circle>
-
-        <!-- 원과 원을 잇는 선 (원 테두리에서 시작해 테두리에서 끝난다) -->
-        <line class="line" x1="345" y1="170" x2="615" y2="170"></line>
-        <line class="line" x1="312" y1="262" x2="368" y2="308"></line>
-        <line class="line" x1="648" y1="262" x2="592" y2="308"></line>
-      </svg>
-
-      </div>
+      <!-- 3D 마인드맵: 중앙 검은 점(yejin)과 그 둘레의 고리들. 끌어서 돌려 본다 -->
+      <div class="mindmap" id="mindmap" aria-label="Yejin의 생각 지도. 끌어서 돌려 볼 수 있습니다"></div>
     </div>
   </section>
 
@@ -204,6 +191,15 @@
 
   <script src="https://unpkg.com/lenis@1.3.4/dist/lenis.min.js"></script>
   <script src="assets/js/main.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="assets/js/mindmap.js"></script>
 
 </body>
 </html>
