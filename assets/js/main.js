@@ -368,14 +368,18 @@ if (homeGrid || listGrid || detailRoot) {
         var params = new URLSearchParams(location.search);
         var filterType = params.get('type');
         var filterYear = params.get('year');
-        var typeGroups = { '기획 · PM': ['기획', 'PM'] };
-        var wantedTypes = filterType ? (typeGroups[filterType] || [filterType]) : null;
-
         var shown = projects.filter(function (p) {
-          var typeOk = !wantedTypes || wantedTypes.some(function (t) { return (p.types || []).indexOf(t) !== -1; });
+          var typeOk = !filterType || (p.types || []).indexOf(filterType) !== -1;
           var yearOk = !filterYear || p.year === filterYear;
           return typeOk && yearOk;
         });
+        // 유형 필터일 때만 order(작을수록 앞)로 앞당김, 나머지는 배열 순서(최신순) 유지
+        if (filterType) {
+          shown = shown.map(function (p, i) { return { p: p, i: i }; }).sort(function (a, b) {
+            var ao = a.p.order != null ? a.p.order : 1e9, bo = b.p.order != null ? b.p.order : 1e9;
+            return ao - bo || a.i - b.i;
+          }).map(function (x) { return x.p; });
+        }
 
         var section = listGrid.closest('.work-grid');
         var stageMQ = window.matchMedia('(min-width: 1025px)');

@@ -23,15 +23,17 @@ content:
             type: string
             required: true
           - name: category
-            label: 표시 분야 (예 "논문 · AI 프로덕트")
+            label: 표시 분야 (예 "AI & Product · Build", 필터용 태그와 같은 이름 사용)
             type: string
           - name: types
             label: 필터용 태그
             type: select
             options:
               multiple: true
-              creatable: true
-              values: [논문, AI 프로덕트, 프로덕트 디자인, 그래픽 디자인, 타이포그라피, 컨텍스트 엔지니어링, 기획, PM, 개발, 전시]
+              values: ["AI & Product", "Build", "Research", "Craft & Visual"]
+          - name: order
+            label: 유형 필터 안 순서 (작을수록 앞, 비우면 최신순)
+            type: number
           - name: year
             label: 연도 (예 "2026")
             type: string
