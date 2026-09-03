@@ -12,7 +12,6 @@
   --bg: #FFFFFF;
   --ink: #000000;
   --surface: #ECECEC;
-  --accent: #FFFB7C;   /* 포인트 도트 — 컬러 피커로 바뀐다 */
   --fs-12: 12pt;
   --fs-14: 12pt;
   --fs-24: 16pt;
@@ -291,7 +290,7 @@ a {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #FFFB7C;
   will-change: transform, opacity;
 }
 
@@ -361,7 +360,7 @@ a {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #FFFB7C;
   animation: drift 10s ease-in-out infinite alternate;
 }
 
@@ -1303,120 +1302,3 @@ img.detail-image {
     padding: 16px 0 32px;
   }
 }
-
-
-/* ---------- 컬러 피커: 메뉴바 오른쪽 끝(홈에만). cosmos.so 검색바의 색 선택 UI를 1/4 크기로, 그림자·테두리 없이 ---------- */
-.color-pick {
-  position: relative;
-  margin-left: auto;         /* 햄버거·이름은 왼쫀, 컬러 원은 오른쪽 끝 */
-  display: flex;
-  align-items: center;
-}
-
-.color-pick .cp-trigger {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: opacity 0.2s ease;
-}
-.color-pick .cp-trigger:hover { opacity: 0.5; }
-.color-pick .cp-trigger svg { width: 35px; height: 35px; display: block; }   /* 컬러 원: 원본 24px → 29 → 35 */
-
-/* 팝오버: 원본 601×364·모서리 24·안여백 8 → 절반 300×·12·4 (면적 1/4) */
-.cp-pop {
-  position: absolute;
-  top: 100%;
-  right: -12px;              /* 안여백 12px을 상쇄해 면의 오른쪽 끝이 본문 여백선과 맞는다 */
-  transform: translateY(8px) scale(0.9);
-  transform-origin: top right;
-  width: 300px;
-  padding: 12px 12px 8px;
-  border-radius: 12px;
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  opacity: 0;
-  pointer-events: none;
-  /* 닫힘: 위로 살짝 빨려 들어가며 빠르게 사라진다 */
-  transition: opacity 0.2s ease-in, transform 0.26s cubic-bezier(0.4, 0, 1, 1);
-}
-.color-pick.open .cp-pop {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(20px) scale(1);
-  /* 열림: 스프링처럼 살짝 넘치고 되돌아오며 무게감 있게 자리 잡는다 */
-  transition: opacity 0.25s ease-out, transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cp-pop { transition-duration: 0.01s !important; }
-}
-
-/* 채도·명도 면: 원본 275px 높이·모서리 16 → 137·8 */
-.cp-sv {
-  position: relative;
-  width: 100%;
-  height: 137px;
-  border-radius: 8px;
-  cursor: crosshair;
-  touch-action: none;
-  background-color: hsl(var(--cp-h, 0) 100% 50%);
-  background-image:
-    linear-gradient(0deg, #000, rgba(0, 0, 0, 0)),
-    linear-gradient(90deg, #fff, rgba(255, 255, 255, 0));
-}
-.cp-sv .cp-cursor {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  box-sizing: border-box;
-}
-
-/* 색상 띠: 원본 16px → 8px */
-.cp-hue {
-  position: relative;
-  height: 8px;
-  border-radius: 999px;
-  cursor: pointer;
-  touch-action: none;
-  background: linear-gradient(90deg, #FF0000, #FFFF00, #00FF00, #00FFFF, #0000FF, #FF00FF, #FF0000);
-}
-.cp-hue .cp-thumb {
-  position: absolute;
-  top: 50%;
-  width: 8px;
-  height: 12px;
-  border-radius: 999px;
-  border: 2px solid #fff;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  box-sizing: border-box;
-}
-
-/* 아랫줄: 정중앙 Reset(기본 노랑으로) */
-.cp-row {
-  display: flex;
-  justify-content: center;
-}
-.cp-reset {
-  height: 32px;
-  padding: 0 4px;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: var(--fs-12);
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-.cp-reset:hover { opacity: 0.5; }
