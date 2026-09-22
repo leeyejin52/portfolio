@@ -407,6 +407,7 @@ function renderShowcase(section, projects) {
 
   var frame = sticky.querySelector('.showcase-frame');
   var tiles = Array.prototype.slice.call(sticky.querySelectorAll('.showcase-tile'));
+  var navicon = document.querySelector('.navicon');
   var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
   var lerp = function (a, b, t) { return a + (b - a) * t; };
   // 축소 곡선: 처음과 끝은 느리고 가운데가 가파른 가감속 (측정값에 맞춤)
@@ -448,13 +449,28 @@ function renderShowcase(section, projects) {
     var cy = stageH / 2;
 
     // 큰 프레임: 꽉 찬 화면 → 가운데 타일(1단계) → 왼쪽 끝 작은 타일(2단계)
-    var w, h, x;
+    // 내내 정사각형을 유지한다. 꽉 찼을 때는 화면의 긴 변만큼 큰 정사각형을 위쪽에 맞춰 두고 넘치는 부분은 잘린다
+    var w, h, x, y;
     if (pB === 0) {
-      w = lerp(vw, W1, eA); h = lerp(stageH, H1, eA); x = (vw - w) / 2;
+      var S0 = Math.max(vw, stageH);
+      var x0 = (vw - S0) / 2, y0 = S0 > stageH ? 0 : (stageH - S0) / 2;
+      w = lerp(S0, W1, eA); h = w;
+      x = lerp(x0, (vw - W1) / 2, eA);
+      y = lerp(y0, cy - H1 / 2, eA);
     } else {
-      w = lerp(W1, W2, eB); h = lerp(H1, H2, eB); x = lerp((vw - W1) / 2, pad, eB);
+      w = lerp(W1, W2, eB); h = w; x = lerp((vw - W1) / 2, pad, eB);
+      y = cy - h / 2;
     }
-    place(frame, x + drift, cy - h / 2, w, h);
+    place(frame, x + drift, y, w, h);
+
+    // 큰 프레임이 햄버거 아이콘 자리를 덮으면 아이콘을 흰색으로 (이미지가 어두우므로)
+    if (navicon) {
+      var nb = navicon.getBoundingClientRect();
+      var sb = sticky.getBoundingClientRect();
+      var fx = sb.left + x + drift, fy = sb.top + y;
+      var covers = fx <= nb.left && fx + w >= nb.right && fy <= nb.top && fy + h >= nb.bottom;
+      navicon.classList.toggle('on-dark', covers);
+    }
 
     // 나머지 타일: 오른쪽 가장자리에 살짝 걸친 채 기다리다 줄로 들어온다
     var tw = lerp(W1, W2, eB), th = lerp(H1, H2, eB);

@@ -79,7 +79,12 @@ a {
   display: block;
   width: 100%;
   border-top: 1.5pt solid var(--ink);
+  transition: border-color 0.2s;
 }
+
+/* 뒤에 어두운 이미지가 깔리면(홈 쇼케이스가 아이콘 자리를 덮을 때) 흰색으로. 메뉴가 열리면 패널이 희므로 다시 검정 */
+.navicon.on-dark span { border-top-color: #fff; }
+.nav:has(.nav-index.open) .navicon span { border-top-color: var(--ink); }
 
 .nav-logo {
   font-size: var(--fs-24);   /* 16pt — 햄버거(18px)와 키를 맞춘 워드마크 */
