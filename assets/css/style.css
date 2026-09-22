@@ -378,7 +378,7 @@ a {
 /* ---------- 홈: 인트로 (고정 배경 위 첫 화면) ---------- */
 
 .hero {
-  min-height: calc(100vh - 72px);
+  min-height: calc(100vh - 72px);   /* 첫 화면은 소개만: 쇼케이스는 스크롤해야 나온다 */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1503,12 +1503,34 @@ img.detail-image {
 /* ---------- 홈: 프로젝트 쇼케이스 — 한 장이 화면을 꽉 채웠다가 작아지며 줄로 모인다 ----------
    크기·위치는 main.js가 스크롤마다 계산해 넣는다. 여기서는 겹침 순서와 색만 정한다. */
 
+/* 홈 내비: 배경 없이 떠 있어 이미지가 화면 맨 위까지 채운다 (메뉴 패널은 제 배경을 가진다) */
+.nav-clear { background: transparent; }
+
 .showcase {
-  --nav-h: 72px;
+  --nav-h: 0px;             /* 내비가 투명하므로 화면 맨 위부터 채운다 */
   --pad: 32px;
   position: relative;
+  z-index: 1;               /* 붙어 있는 소개 위로 밀고 올라온다 */
   height: 400vh;            /* JS가 실제 값으로 다시 정한다 */
 }
+
+/* 홈 소개: 화면에 붙어 있어 다음 구역이 그 위로 덮으며 올라온다.
+   덮이는 동안 글은 크기 그대로 위로 빠르게 올라가며 옅어진다(main.js가 스크롤마다 --cover를 0~1로 넣는다).
+   이미지가 화면의 60%를 덮을 때쯤 글은 다 올라가 사라진다. 완전히 덮인 뒤에는 뒤에서 비치지 않도록 숨긴다 */
+.hero-pinned {
+  position: sticky;
+  top: 72px;
+  z-index: 0;
+  --rise: min(1, calc(var(--cover, 0) / 0.6));   /* 덮임 0~60% 구간을 0~1로 */
+}
+
+.hero-pinned .container {
+  transform: translateY(calc(-35vh * var(--rise)));
+  opacity: calc(1 - var(--rise));
+  will-change: transform, opacity;
+}
+
+.hero-pinned.is-covered { visibility: hidden; }
 
 .showcase-sticky {
   position: sticky;
@@ -1546,7 +1568,8 @@ img.detail-image {
 
 @media (max-width: 720px) {
   .showcase {
-    --nav-h: 60px;
     --pad: 18px;
   }
+
+  .hero-pinned { top: 60px; }
 }

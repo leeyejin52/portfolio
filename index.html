@@ -9,10 +9,9 @@
 </head>
 <body>
 
-  <nav class="nav">
+  <nav class="nav nav-clear">
     <div class="container nav-bar">
       <button class="navicon" aria-label="Menu"><span></span><span></span><span></span></button>
-      <a class="nav-logo" href="index.html">Yejin Lee</a>
     </div>
     <!-- 햄버거 인덱스 패널 -->
     <div class="nav-index" id="nav-index" hidden>
@@ -141,20 +140,20 @@
     <span class="dot" style="left: 14.1%; top: 27.0%; --dx: -88px; --dy: -109px; animation-duration: 8.9s; animation-delay: -8.9s;"></span>
   </div>
 
-  <!-- 첫 화면: 프로젝트 하나가 화면을 꽉 채웠다가, 스크롤하면 작아지며 전체 프로젝트 줄로 모인다
-       (내용은 data/projects.json, 그리기는 main.js의 renderShowcase) -->
-  <section class="showcase" id="showcase" aria-label="Projects">
-    <div class="showcase-sticky"></div>
-  </section>
-
-  <!-- 소개 텍스트 -->
-  <header class="hero">
+  <!-- 첫 화면: 소개 텍스트만. 화면에 붙어 있고, 스크롤하면 아래 쇼케이스가 그 위로 밀고 올라온다 -->
+  <header class="hero hero-pinned">
     <div class="container">
       <p class="role">Role · Discipline placeholder</p>
       <h1>Positioning statement placeholder,<br>up to two lines</h1>
       <p>Short bio placeholder. Two or three sentences about what you do and how you work.</p>
     </div>
   </header>
+
+  <!-- 소개 아래: 프로젝트 하나가 화면을 꽉 채웠다가, 스크롤하면 작아지며 전체 프로젝트 줄로 모인다
+       (내용은 data/projects.json, 그리기는 main.js의 renderShowcase) -->
+  <section class="showcase" id="showcase" aria-label="Projects">
+    <div class="showcase-sticky"></div>
+  </section>
 
   <footer class="footer">
     <div class="container">

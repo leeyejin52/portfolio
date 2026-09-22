@@ -367,8 +367,28 @@ function detailURL(p) {
   return ROOT + 'projects/detail.html?id=' + p.id;
 }
 
+// 홈 소개(붙어 있는 첫 화면): 쇼케이스가 위로 덮어 오는 동안 글이 크기 그대로 위로 조금 밀려 올라간다.
+// --cover 는 덮이기 시작(0)부터 완전히 덮임(1)까지. 값은 스크롤 위치에 묶여 있어 되감으면 되돌아온다.
+// 완전히 덮인 뒤에는 숨겨서, 쇼케이스가 작아진 뒤 타일 사이로 비치지 않게 한다.
+(function () {
+  var hero = document.querySelector('.hero-pinned');
+  var next = hero && hero.nextElementSibling;
+  if (!hero || !next) return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var update = function () {
+    var span = next.getBoundingClientRect().top + window.scrollY;   // 다음 구역이 화면 맨 위에 닿는 스크롤 위치
+    var cover = span > 0 ? Math.max(0, Math.min(1, window.scrollY / span)) : 1;
+    hero.style.setProperty('--cover', reduce ? 0 : cover.toFixed(3));
+    hero.classList.toggle('is-covered', cover >= 1);
+  };
+  update();
+  if (lenis) lenis.on('scroll', update);
+  window.addEventListener('scroll', update, { passive: true });
+})();
+
 // 홈 쇼케이스 — brand.squarespace.com/campaign 의 인트로를 따른다.
-// 1단계(1.3화면): 첫 프로젝트 한 장이 화면을 꽉 채운 채 작아져 가운데 타일이 된다.
+// 0단계(0.8화면): 첫 프로젝트 한 장이 화면을 꽉 채운 채 머문다.
+// 1단계(1.3화면): 그 장이 작아져 가운데 타일이 된다.
 // 2단계(1.5화면): 그 타일이 왼쪽으로 가고 나머지가 오른쪽에서 들어와 한 줄이 된다.
 // 3단계(줄이 화면보다 길 때만): 계속 스크롤하면 줄이 왼쪽으로 흐른다. 모두 스크롤 위치에 묶여 있다(되감기 가능).
 function renderShowcase(section, projects) {
@@ -393,21 +413,22 @@ function renderShowcase(section, projects) {
   var easeShrink = function (t) { var a = t * t * t, b = (1 - t) * (1 - t) * (1 - t); return a / (a + b); };
   var easeRow = function (t) { return t * t * (3 - 2 * t); };
 
-  var vw, stageH, navH, pad, W1, H1, W2, H2, G1, G2, A, B, C, HOLD, overflow;
+  var vw, stageH, navH, pad, W1, H1, W2, H2, G1, G2, F, A, B, C, HOLD, overflow;
   var measure = function () {
     vw = sticky.clientWidth;
-    navH = parseFloat(getComputedStyle(section).getPropertyValue('--nav-h')) || 72;
+    navH = parseFloat(getComputedStyle(section).getPropertyValue('--nav-h')) || 0;
     pad = parseFloat(getComputedStyle(section).getPropertyValue('--pad')) || 32;
     stageH = window.innerHeight - navH;
     W1 = clamp(vw * 0.243, 180, 400); H1 = W1;   // 축소 직후 타일 (정사각형)
     W2 = clamp(vw * 0.157, 120, 260); H2 = W2;   // 줄에 섰을 때 타일 (정사각형)
     G1 = W1 * GAP_RATIO; G2 = W2 * GAP_RATIO;               // 각 단계의 타일 사이 간격
+    F = stageH * 0.8;                                       // 꽉 찬 채 머무는 구간
     A = stageH * 1.3;                                       // 축소 구간
     B = stageH * 1.5;                                       // 줄로 모이는 구간
     overflow = Math.max(0, pad + n * W2 + (n - 1) * G2 + pad - vw);   // 줄이 화면보다 긴 만큼
     C = overflow ? Math.max(stageH, overflow * 0.8) : 0;    // 줄이 흐르는 구간
     HOLD = stageH * 0.5;                                    // 다 모인 채 잠깐 머무는 구간
-    section.style.height = (stageH + (reduce ? 0 : A + B + C + HOLD)) + 'px';
+    section.style.height = (stageH + (reduce ? 0 : F + A + B + C + HOLD)) + 'px';
   };
 
   var place = function (el, x, y, w, h) {
@@ -417,7 +438,7 @@ function renderShowcase(section, projects) {
   };
 
   var update = function () {
-    var s = clamp(navH - section.getBoundingClientRect().top, 0, A + B + C + HOLD);
+    var s = clamp(navH - section.getBoundingClientRect().top, 0, F + A + B + C + HOLD) - F;
     if (reduce) s = A + B;   // 움직임을 줄인 환경: 완성된 줄만 보여준다
 
     var pA = clamp(s / A, 0, 1), eA = easeShrink(pA);
