@@ -56,20 +56,25 @@ a {
 }
 
 .nav-bar {
+  max-width: none;             /* 가운데 폭 제한 없이 화면 가장자리 기준 */
   display: flex;
   align-items: center;
+  justify-content: flex-end;   /* 햄버거는 화면 오른쪽 끝(여백 32px) */
   gap: 24px;
   height: 72px;
 }
 
-/* 햄버거 아이콘: 1.5pt 선 3개 */
+/* 햄버거 아이콘: 커서 원과 똑같이 1.5pt 테두리로 그린 선 2개. 테두리는 브라우저가 픽셀 격자에 맞춰 그려서 배율·확대에 상관없이 두 선이 같은 두께로 나온다.
+   메뉴가 열리면 두 선이 가운데로 모여 X가 된다 */
 .navicon {
+  --h: 14px;                 /* 아이콘 높이. 내비(72px) 안에서 위 여백이 정수(29px)가 되도록 짝수로 — 반 픽셀에 걸리면 두 선이 다르게 번진다 */
+  --bar: 1.5pt;              /* 선 두께 = 커서 원 테두리와 동일 */
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
-  width: 28px;
-  height: 18px;
+  width: 24px;
+  height: var(--h);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -78,11 +83,20 @@ a {
 .navicon span {
   display: block;
   width: 100%;
-  border-top: 1.5pt solid var(--ink);
-  transition: border-color 0.2s;
+  height: 0;
+  border-top: var(--bar) solid var(--ink);
+  transition: border-color 0.4s cubic-bezier(0.19, 1, 0.22, 1), transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-/* 뒤에 어두운 이미지가 깔리면(홈 쇼케이스가 아이콘 자리를 덮을 때) 흰색으로. 메뉴가 열리면 패널이 희므로 다시 검정 */
+.nav:has(.nav-index.open) .navicon span:first-child {
+  transform: translateY(calc((var(--h) - var(--bar)) / 2)) rotate(45deg);
+}
+
+.nav:has(.nav-index.open) .navicon span:last-child {
+  transform: translateY(calc((var(--bar) - var(--h)) / 2)) rotate(-45deg);
+}
+
+/* 뒤에 어두운 이미지가 깔리면(홈 쇼케이스가 아이콘 자리를 덮을 때) 흰색으로. 메뉴가 열리면 흰 패널 위이므로 검정 */
 .navicon.on-dark span { border-top-color: #fff; }
 .nav:has(.nav-index.open) .navicon span { border-top-color: var(--ink); }
 
@@ -99,41 +113,42 @@ a {
 
 /* 열고 닫힘: 0fr → 1fr 이라 내용 높이를 몰라도 부드럽게 늘어난다.
    감속 곡선은 스크롤(Lenis)과 같은 결로 뒤로 갈수록 천천히 멈춘다. */
+/* 메뉴 패널: 페이지를 밀지 않고 화면 오른쪽에 떠 있다.
+   열릴 때는 오른쪽에서 왼쪽으로 미끄러져 들어오고, 닫힐 때는 그 역재생으로 오른쪽으로 미끄러져 나간다 */
 .nav-index {
-  display: grid;
-  grid-template-rows: 0fr;
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  height: 100dvh;
+  width: min(440px, 100%);
   background: var(--bg);
-  transition: grid-template-rows 0.75s cubic-bezier(0.19, 1, 0.22, 1);
+  z-index: -1;               /* 내비 안에서 햄버거 아이콘보다 아래, 페이지 내용보다는 위 */
+  opacity: 0;
+  transform: translateX(100%);
+  overflow-y: auto;
+  transition: opacity 0.3s ease 0.8s, transform 1.1s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .nav-index.open {
-  grid-template-rows: 1fr;
-  transition-duration: 1.4s;
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.3s ease, transform 1.1s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-/* 위아래 여백도 같이 접혀야 닫혔을 때 높이가 완전히 0이 된다 */
+/* 스크롤로 닫힐 때는 손에 붙게 더 빨리 */
+.nav-index.quick {
+  transition: opacity 0.2s ease 0.2s, transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
 .nav-index > .container {
-  width: 100%;        /* 그리드 항목이 되면 내용 폭으로 줄어들어 가운데로 몰린다 */
-  overflow: hidden;
-  min-height: 0;
+  max-width: none;
+  margin: 0;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  gap: 96px;
-  padding-top: 0;
-  padding-bottom: 0;
-  transition: padding 0.75s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.nav-index.open > .container {
-  padding-top: 48px;
-  padding-bottom: 64px;
-  transition-duration: 1.4s;
-}
-
-/* 스크롤로 닫힐 때는 손에 붙게 더 빨리 접힌다 */
-.nav-index.quick,
-.nav-index.quick > .container {
-  transition-duration: 0.4s;
+  gap: 40px;
+  padding: 104px 48px 48px;   /* 위는 내비 띠(72px) 아래부터 */
 }
 
 /* 항목이 하나씩 차례로 내려앉는다.
@@ -1146,19 +1161,14 @@ img.detail-image {
   }
 
   .navicon {
-    width: 22px;
-    height: 14px;
+    --h: 12px;               /* 내비 60px 안에서 위 여백 24px */
+    width: 20px;
   }
 
   /* 메뉴: 3컬럼 → 세로 스택, 태그는 가로로 흐르게 */
   .nav-index > .container {
-    flex-direction: column;
     gap: 32px;
-  }
-
-  .nav-index.open > .container {
-    padding-top: 8px;
-    padding-bottom: 40px;
+    padding: 88px 18px 40px;   /* 위는 내비 띠(60px) 아래부터 */
   }
 
   .group-links {
@@ -1508,7 +1518,7 @@ img.detail-image {
 /* ---------- 홈: 프로젝트 쇼케이스 — 한 장이 화면을 꽉 채웠다가 작아지며 줄로 모인다 ----------
    크기·위치는 main.js가 스크롤마다 계산해 넣는다. 여기서는 겹침 순서와 색만 정한다. */
 
-/* 홈 내비: 배경 없이 떠 있어 이미지가 화면 맨 위까지 채운다 (메뉴 패널은 제 배경을 가진다) */
+/* 홈 내비: 배경 없이 떠 있어 이미지가 화면 맨 위까지 채운다 (메뉴 패널은 오른쪽에 따로 떠서 제 배경을 가진다) */
 .nav-clear { background: transparent; }
 
 .showcase {
