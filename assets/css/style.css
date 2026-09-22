@@ -1566,7 +1566,19 @@ img.detail-image {
   will-change: transform, width, height;
 }
 
-.showcase-frame { z-index: 2; }
+.showcase-frame {
+  z-index: 2;
+  /* 첫 이미지의 바탕: 파랑(#0A1DB9) 위에 원본에서 잘라 낸 질감 조각을 이어 붙인다.
+     조각 크기는 main.js가 그림의 표시 배율에 맞춰 넣어 질감 알갱이 크기가 그림과 같다 */
+  background: #0A1DB9 url(../img/showcase-blue-grain.webp) repeat center;
+}
+
+/* 큰 프레임의 그림은 잘리지 않고 통째로 가운데에 놓인다 — 화면이 정사각형이 아닐 때는 파란 바탕이 양옆(또는 위아래)을 채운다 */
+.showcase .showcase-frame .thumb {
+  object-fit: contain;
+  object-position: center;
+  background: transparent;   /* 그림 밖 남는 자리는 이미지의 회색 바탕이 아니라 프레임의 파랑이 보이게 */
+}
 .showcase-tile { z-index: 1; }
 
 .showcase .thumb {
