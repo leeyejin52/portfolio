@@ -269,7 +269,7 @@ a {
   }
 }
 
-/* ---------- 페이지 진입 전환: 노란 점이 글리치와 함께 잠깐 스쳤다 사라짐 ----------
+/* ---------- 페이지 진입 전환: 검은 점이 글리치와 함께 잠깐 스쳤다 사라짐 ----------
    바깥 .g = 위치와 글리치(위치 튐·깜빡임), 안쪽 .d = 원과 미세한 흐름 */
 
 .enter-dots {
@@ -290,7 +290,7 @@ a {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: #FFFB7C;
+  background: var(--ink);
   will-change: transform, opacity;
 }
 
@@ -342,7 +342,7 @@ a {
   100% { transform: translate(0, 0); }
 }
 
-/* ---------- 홈: 고정 배경 (흰 바탕 + 노란 원 산포) ----------
+/* ---------- 홈: 고정 배경 (흰 바탕 + 검은 원 산포) ----------
    스크롤해도 원들은 제자리에 있고 콘텐츠가 그 위로 올라옴 */
 
 .hero-image {
@@ -360,7 +360,7 @@ a {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: #FFFB7C;
+  background: var(--ink);
   animation: drift 10s ease-in-out infinite alternate;
 }
 
