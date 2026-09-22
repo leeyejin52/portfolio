@@ -367,15 +367,191 @@ function detailURL(p) {
   return ROOT + 'projects/detail.html?id=' + p.id;
 }
 
+// 홈 쇼케이스 — brand.squarespace.com/campaign 의 인트로를 따른다.
+// 1단계(1.3화면): 첫 프로젝트 한 장이 화면을 꽉 채운 채 작아져 가운데 타일이 된다.
+// 2단계(1.5화면): 그 타일이 왼쪽으로 가고 나머지가 오른쪽에서 들어와 한 줄이 된다.
+// 3단계(줄이 화면보다 길 때만): 계속 스크롤하면 줄이 왼쪽으로 흐른다. 모두 스크롤 위치에 묶여 있다(되감기 가능).
+function renderShowcase(section, projects) {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var sticky = section.querySelector('.showcase-sticky');
+  var n = projects.length;
+  if (!n) return;
+
+  var GAP_RATIO = 0.31;          // 타일 사이 간격 = 타일 너비의 31% (어느 단계에서든 유지)
+
+  sticky.innerHTML =
+    '<a class="showcase-frame" data-i="0" href="' + detailURL(projects[0]) + '">' + thumbHTML(projects[0]) + '</a>' +
+    projects.slice(1).map(function (p, k) {
+      return '<a class="showcase-tile" data-i="' + (k + 1) + '" href="' + detailURL(p) + '">' + thumbHTML(p) + '</a>';
+    }).join('');
+
+  var frame = sticky.querySelector('.showcase-frame');
+  var tiles = Array.prototype.slice.call(sticky.querySelectorAll('.showcase-tile'));
+  var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+  var lerp = function (a, b, t) { return a + (b - a) * t; };
+  // 축소 곡선: 처음과 끝은 느리고 가운데가 가파른 가감속 (측정값에 맞춤)
+  var easeShrink = function (t) { var a = t * t * t, b = (1 - t) * (1 - t) * (1 - t); return a / (a + b); };
+  var easeRow = function (t) { return t * t * (3 - 2 * t); };
+
+  var vw, stageH, navH, pad, W1, H1, W2, H2, G1, G2, A, B, C, HOLD, overflow;
+  var measure = function () {
+    vw = sticky.clientWidth;
+    navH = parseFloat(getComputedStyle(section).getPropertyValue('--nav-h')) || 72;
+    pad = parseFloat(getComputedStyle(section).getPropertyValue('--pad')) || 32;
+    stageH = window.innerHeight - navH;
+    W1 = clamp(vw * 0.243, 180, 400); H1 = W1;   // 축소 직후 타일 (정사각형)
+    W2 = clamp(vw * 0.157, 120, 260); H2 = W2;   // 줄에 섰을 때 타일 (정사각형)
+    G1 = W1 * GAP_RATIO; G2 = W2 * GAP_RATIO;               // 각 단계의 타일 사이 간격
+    A = stageH * 1.3;                                       // 축소 구간
+    B = stageH * 1.5;                                       // 줄로 모이는 구간
+    overflow = Math.max(0, pad + n * W2 + (n - 1) * G2 + pad - vw);   // 줄이 화면보다 긴 만큼
+    C = overflow ? Math.max(stageH, overflow * 0.8) : 0;    // 줄이 흐르는 구간
+    HOLD = stageH * 0.5;                                    // 다 모인 채 잠깐 머무는 구간
+    section.style.height = (stageH + (reduce ? 0 : A + B + C + HOLD)) + 'px';
+  };
+
+  var place = function (el, x, y, w, h) {
+    el.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
+    el.style.width = w.toFixed(1) + 'px';
+    el.style.height = h.toFixed(1) + 'px';
+  };
+
+  var update = function () {
+    var s = clamp(navH - section.getBoundingClientRect().top, 0, A + B + C + HOLD);
+    if (reduce) s = A + B;   // 움직임을 줄인 환경: 완성된 줄만 보여준다
+
+    var pA = clamp(s / A, 0, 1), eA = easeShrink(pA);
+    var pB = clamp((s - A) / B, 0, 1), eB = easeRow(pB);
+    var pC = C ? clamp((s - A - B) / C, 0, 1) : 0;
+    var drift = -pC * overflow;
+    var cy = stageH / 2;
+
+    // 큰 프레임: 꽉 찬 화면 → 가운데 타일(1단계) → 왼쪽 끝 작은 타일(2단계)
+    var w, h, x;
+    if (pB === 0) {
+      w = lerp(vw, W1, eA); h = lerp(stageH, H1, eA); x = (vw - w) / 2;
+    } else {
+      w = lerp(W1, W2, eB); h = lerp(H1, H2, eB); x = lerp((vw - W1) / 2, pad, eB);
+    }
+    place(frame, x + drift, cy - h / 2, w, h);
+
+    // 나머지 타일: 오른쪽 가장자리에 살짝 걸친 채 기다리다 줄로 들어온다
+    var tw = lerp(W1, W2, eB), th = lerp(H1, H2, eB);
+    tiles.forEach(function (t, k) {
+      var i = k + 1;
+      var x0 = vw * 0.98 + k * (W1 + G1);
+      var x1 = pad + i * (W2 + G2);
+      place(t, lerp(x0, x1, eB) + drift, cy - th / 2, tw, th);
+    });
+  };
+
+  measure();
+  update();
+  if (lenis) lenis.on('scroll', update);
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', function () { measure(); update(); });
+}
+
+// 상세 기능 소개 — 왼쪽 글, 가운데 기기 프레임, 오른쪽 점이 화면에 붙어 있고,
+// 스크롤은 (1) 몇 번째 기능인지 (2) 그 기능 화면이 프레임 안에서 얼마나 내려갔는지를 정한다.
+// 기능 하나당 스크롤 길이의 앞뒤 15%는 화면이 멈춰 있어 바뀐 직후 읽을 틈이 생긴다.
+function renderFeatures(root, features) {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var list = (features && features.length) ? features : [
+    { title: '기능 제목이 들어갈 자리', text: '이 기능이 어떤 문제를 풀었는지 설명이 들어갈 자리입니다. 스크롤하면 오른쪽 화면이 함께 내려갑니다.' },
+    { title: '두 번째 기능', text: '두 번째 기능 설명이 들어갈 자리입니다.' },
+    { title: '세 번째 기능', text: '세 번째 기능 설명이 들어갈 자리입니다.' }
+  ];
+  var n = list.length;
+
+  root.classList.add('features');
+  root.style.setProperty('--n', n);
+  root.innerHTML =
+    '<div class="feat-track"></div>' +
+    '<div class="feat-text">' + list.map(function (f) {
+      return '<div class="feat-caption"><h2>' + esc(f.title) + '</h2><p>' + esc(f.text) + '</p></div>';
+    }).join('') + '</div>' +
+    '<div class="feat-stage"><div class="feat-device">' + list.map(function (f) {
+      var inner;
+      if (f.video) {
+        inner = '<video muted playsinline preload="auto" src="' + esc(ROOT + f.video) + '"></video>';
+      } else if (f.image) {
+        inner = '<img src="' + esc(ROOT + f.image) + '" alt="' + esc(f.title) + '">';
+      } else {
+        inner = '<div class="feat-placeholder"><span></span><span></span><span></span><span></span><span></span><span></span></div>';
+      }
+      return '<div class="feat-screen">' + inner + '</div>';
+    }).join('') + '</div></div>' +
+    '<div class="feat-dots" aria-hidden="true">' + list.map(function () { return '<i></i>'; }).join('') + '</div>';
+
+  var captions = Array.prototype.slice.call(root.querySelectorAll('.feat-caption'));
+  var screens = Array.prototype.slice.call(root.querySelectorAll('.feat-screen'));
+  var dots = Array.prototype.slice.call(root.querySelectorAll('.feat-dots i'));
+  var stage = root.querySelector('.feat-stage');
+  var device = root.querySelector('.feat-device');
+  var current = -1;
+
+  // 화면이 프레임보다 긴 만큼(--over)이 곧 그 기능에서 굴릴 수 있는 거리
+  var measure = function () {
+    var h = device.clientHeight;
+    screens.forEach(function (s) {
+      var c = s.firstElementChild;
+      if (!c || c.tagName === 'VIDEO') return;
+      s.style.setProperty('--over', Math.max(0, c.scrollHeight - h) + 'px');
+    });
+  };
+
+  var setActive = function (i) {
+    if (i === current) return;
+    current = i;
+    captions.forEach(function (c, k) { c.classList.toggle('on', k === i); });
+    screens.forEach(function (s, k) {
+      s.classList.toggle('on', k === i);
+      var v = s.querySelector('video');
+      if (!v) return;
+      if (k === i) { v.currentTime = 0; v.play().catch(function () {}); }
+      else v.pause();
+    });
+    dots.forEach(function (d, k) { d.classList.toggle('on', k === i); });
+  };
+
+  var update = function () {
+    var rect = root.getBoundingClientRect();
+    var stickTop = parseFloat(getComputedStyle(stage).top) || 0;
+    var total = root.offsetHeight - stage.offsetHeight;   // 무대가 붙어 있는 총 스크롤 거리
+    if (!(total > 0)) return;                              // 레이아웃 전이면 건너뜀
+    var scrolled = Math.max(0, Math.min(total, stickTop - rect.top));
+    var per = total / n;
+    var idx = Math.max(0, Math.min(n - 1, Math.floor(scrolled / per)));
+    var raw = (scrolled - idx * per) / per;
+    var prog = reduce ? 0 : Math.max(0, Math.min(1, (raw - 0.15) / 0.7));
+    screens[idx].style.setProperty('--p', prog);
+    setActive(idx);
+  };
+
+  measure();
+  update();
+  if (lenis) lenis.on('scroll', update);
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', function () { measure(); update(); });
+  root.querySelectorAll('img').forEach(function (img) {
+    img.addEventListener('load', function () { measure(); update(); });
+  });
+}
+
 var homeGrid = document.getElementById('home-grid');
+var showcase = document.getElementById('showcase');
 var listGrid = document.getElementById('list-grid');
 var detailRoot = document.getElementById('detail-root');
 
-if (homeGrid || listGrid || detailRoot) {
+if (homeGrid || showcase || listGrid || detailRoot) {
   fetch(ROOT + 'data/projects.json', { cache: 'no-cache' })
     .then(function (r) { return r.json(); })
     .then(function (data) {
       var projects = data.projects || [];
+
+      // 홈: 쇼케이스
+      if (showcase) renderShowcase(showcase, projects);
 
       // 홈: 카드 전체가 링크
       if (homeGrid) {
@@ -569,6 +745,9 @@ if (homeGrid || listGrid || detailRoot) {
         set('.d-team', p.team);
         set('.d-tools', p.tools);
         set('.d-graphnote', p.graphNote || '');
+
+        // 4. 기능 소개
+        renderFeatures(detailRoot.querySelector('#feat-root'), p.features);
         var linkDd = detailRoot.querySelector('.d-link');
         linkDd.innerHTML = p.link ? '<a href="' + esc(p.link) + '">' + esc(p.link) + '</a>' : '—';
 
@@ -594,23 +773,27 @@ if (homeGrid || listGrid || detailRoot) {
         document.body.appendChild(floatPrev);
         document.body.appendChild(floatNext);
 
-        // 이미지 구간에 도달하면 표시, 하단 버튼을 만나면 숨김
+        // 기능 구간에 도달하면 표시, 구간이 화면 가운데를 차지하는 동안과 하단 버튼을 만나면 숨김
+        // (점 인디케이터가 오른쪽 가장자리에 있어 Next 글자와 겹치지 않도록)
         var imagesReached = false;
+        var featActive = false;
         var buttonsVisible = false;
         var updateFloat = function () {
-          var show = imagesReached && !buttonsVisible;
+          var show = imagesReached && !featActive && !buttonsVisible;
           floatPrev.classList.toggle('off', !show);
           floatNext.classList.toggle('off', !show);
         };
-        // 기준: 첫 번째 이미지의 밑단이 화면 안에 들어왔을 때
-        var firstImage = detailRoot.querySelector('.detail-image-xl');
-        var checkFirstImage = function () {
-          imagesReached = firstImage.getBoundingClientRect().bottom <= window.innerHeight;
+        var featSec = detailRoot.querySelector('.detail-features');
+        var checkFeat = function () {
+          var r = featSec.getBoundingClientRect();
+          var mid = window.innerHeight * 0.5;
+          imagesReached = r.top <= window.innerHeight;
+          featActive = r.top < mid && r.bottom > mid;
           updateFloat();
         };
-        if (lenis) lenis.on('scroll', checkFirstImage);
-        else window.addEventListener('scroll', checkFirstImage, { passive: true });
-        checkFirstImage();
+        if (lenis) lenis.on('scroll', checkFeat);
+        window.addEventListener('scroll', checkFeat, { passive: true });
+        checkFeat();
         new IntersectionObserver(function (entries) {
           buttonsVisible = entries[0].isIntersecting;
           updateFloat();
@@ -647,7 +830,7 @@ if (awardsList) {
 
 // 스크롤 안내: 아래에 내용이 더 있다는 표시. 홈에서만 띄우고, 스크롤을 시작하면 사라진다
 (function () {
-  if (!document.getElementById('home-grid')) return;
+  if (!document.getElementById('home-grid') && !document.getElementById('showcase')) return;
   // 스크롤할 게 없으면 띄우지 않는다
   if (document.documentElement.scrollHeight <= window.innerHeight + 40) return;
 

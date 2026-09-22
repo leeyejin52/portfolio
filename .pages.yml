@@ -76,6 +76,23 @@ content:
           - name: link
             label: 결과물 링크 (URL)
             type: string
+          - name: features
+            label: 기능 소개 (상세 하단 스크롤 구간, 위에서부터 차례로 보임)
+            type: object
+            list: true
+            fields:
+              - name: title
+                label: 기능 제목
+                type: string
+              - name: text
+                label: 설명
+                type: text
+              - name: image
+                label: 화면 이미지 (세로로 긴 스크린샷, 스크롤에 따라 내려감)
+                type: image
+              - name: video
+                label: 화면 영상 경로 (mp4, 이미지 대신 쓸 때)
+                type: string
 
   - name: awards
     label: Awards

@@ -1302,3 +1302,250 @@ img.detail-image {
     padding: 16px 0 32px;
   }
 }
+
+/* ---------- 상세: 기능 소개 — 글·기기 프레임·점이 화면에 붙고, 스크롤이 몇 번째 기능인지와
+   프레임 안 화면이 얼마나 내려갔는지를 정한다 ---------- */
+
+.detail-features {
+  padding: 0 0 64px;
+  --feat-top: 96px;                                   /* 내비(72px) 아래 여백 */
+  --feat-h: calc(100vh - var(--feat-top) - 32px);     /* 붙어 있는 무대 높이 */
+  --feat-step: 120vh;                                 /* 기능 하나당 스크롤 길이 */
+}
+
+.features {
+  display: grid;
+  grid-template-columns: 5fr 7fr 40px;
+  gap: 48px;
+}
+
+/* 보이지 않는 트랙: 기능 수 × 한 칸 길이만큼 스크롤 거리를 만든다 */
+.feat-track {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  height: calc(var(--n, 3) * var(--feat-step));
+  pointer-events: none;
+}
+
+.feat-text,
+.feat-stage,
+.feat-dots {
+  grid-row: 1;
+  position: sticky;
+  top: var(--feat-top);
+  height: var(--feat-h);
+  align-self: start;
+}
+
+.feat-text { grid-column: 1; }
+
+/* 글은 겹쳐 두고 지금 기능 것만 보인다 */
+.feat-caption {
+  position: absolute;
+  inset: 0;
+  padding-top: 24px;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+.feat-caption.on {
+  opacity: 1;
+  transform: none;
+}
+
+.feat-caption h2 {
+  font-size: var(--fs-24);
+  font-weight: 400;
+  margin: 0 0 16px;
+}
+
+.feat-caption p {
+  font-size: var(--fs-14);
+  max-width: 36ch;
+}
+
+.feat-stage {
+  grid-column: 2;
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.feat-device {
+  width: min(360px, 60%);
+  height: calc(100% - 64px);
+  background: var(--bg);
+  border-radius: 32px;
+  overflow: hidden;
+  position: relative;
+}
+
+.feat-screen {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.feat-screen.on { opacity: 1; }
+
+/* --p: 이 기능 안에서의 진행도(0~1), --over: 화면이 프레임보다 긴 만큼 */
+.feat-screen > img,
+.feat-screen > .feat-placeholder {
+  display: block;
+  width: 100%;
+  transform: translateY(calc(var(--p, 0) * -1 * var(--over, 0px)));
+  will-change: transform;
+}
+
+.feat-screen > video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 이미지가 없을 때: 회색 블록이 이어진 긴 화면 */
+.feat-placeholder {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feat-placeholder span {
+  display: block;
+  height: 160px;
+  background: var(--surface);
+}
+
+.feat-placeholder span:nth-child(odd) { height: 96px; }
+
+.feat-dots {
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.feat-dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: background 0.3s;
+}
+
+.feat-dots i.on { background: var(--ink); }
+
+/* 태블릿 이하: 프레임이 위에 붙고 글이 아래로 이어진다. 점은 숨긴다 */
+@media (max-width: 1024px) {
+  .detail-features {
+    --feat-top: 72px;
+    --feat-h: 56vh;
+    padding-bottom: 40px;
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .feat-track,
+  .feat-dots { display: none; }
+
+  .feat-text,
+  .feat-stage {
+    grid-row: auto;
+    grid-column: 1;
+  }
+
+  .feat-stage {
+    order: -1;
+    height: var(--feat-h);
+  }
+
+  .feat-text {
+    position: static;
+    height: auto;
+  }
+
+  .feat-caption {
+    position: static;
+    min-height: 70vh;
+    padding: 32px 0;
+    transform: none;
+    opacity: 0.3;
+  }
+
+  .feat-caption.on { opacity: 1; }
+
+  .feat-device {
+    width: min(300px, 70%);
+    height: calc(100% - 40px);
+  }
+}
+
+@media (max-width: 720px) {
+  .detail-features { --feat-top: 60px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feat-caption,
+  .feat-screen,
+  .feat-dots i { transition: none; }
+}
+
+/* ---------- 홈: 프로젝트 쇼케이스 — 한 장이 화면을 꽉 채웠다가 작아지며 줄로 모인다 ----------
+   크기·위치는 main.js가 스크롤마다 계산해 넣는다. 여기서는 겹침 순서와 색만 정한다. */
+
+.showcase {
+  --nav-h: 72px;
+  --pad: 32px;
+  position: relative;
+  height: 400vh;            /* JS가 실제 값으로 다시 정한다 */
+}
+
+.showcase-sticky {
+  position: sticky;
+  top: var(--nav-h);
+  height: calc(100vh - var(--nav-h));
+  overflow: hidden;
+}
+
+/* 큰 프레임(= 첫 프로젝트)과 나머지 타일: 모두 왼쪽 위 기준으로 JS가 옮긴다 */
+.showcase-frame,
+.showcase-tile {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  overflow: hidden;
+  background: var(--surface);
+  will-change: transform, width, height;
+}
+
+.showcase-frame { z-index: 2; }
+.showcase-tile { z-index: 1; }
+
+.showcase .thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--surface);
+  display: block;
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .showcase {
+    --nav-h: 60px;
+    --pad: 18px;
+  }
+}
