@@ -1529,23 +1529,16 @@ img.detail-image {
   height: 400vh;            /* JS가 실제 값으로 다시 정한다 */
 }
 
-/* 홈 소개: 화면에 붙어 있어 다음 구역이 그 위로 덮으며 올라온다.
-   덮이는 동안 글은 크기 그대로 위로 빠르게 올라가며 옅어진다(main.js가 스크롤마다 --cover를 0~1로 넣는다).
-   이미지가 화면의 60%를 덮을 때쯤 글은 다 올라가 사라진다. 완전히 덮인 뒤에는 뒤에서 비치지 않도록 숨긴다 */
-.hero-pinned {
-  position: sticky;
-  top: 72px;
-  z-index: 0;
-  --rise: min(1, calc(var(--cover, 0) / 0.6));   /* 덮임 0~60% 구간을 0~1로 */
+/* 홈 소개: 글은 화면 왼쪽 아래(햄버거와 같은 가장자리 기준). 고정하지 않고 그냥 스크롤로 지나간다 */
+.hero-home {
+  justify-content: flex-end;
+  padding-bottom: 96px;
 }
 
-.hero-pinned .container {
-  transform: translateY(calc(-35vh * var(--rise)));
-  opacity: calc(1 - var(--rise));
-  will-change: transform, opacity;
+.hero-home .container {
+  max-width: none;
+  margin: 0;
 }
-
-.hero-pinned.is-covered { visibility: hidden; }
 
 .showcase-sticky {
   position: sticky;
@@ -1566,18 +1559,24 @@ img.detail-image {
   will-change: transform, width, height;
 }
 
-.showcase-frame {
-  z-index: 2;
-  /* 첫 이미지의 바탕: 파랑(#0A1DB9) 위에 원본에서 잘라 낸 질감 조각을 이어 붙인다.
-     조각 크기는 main.js가 그림의 표시 배율에 맞춰 넣어 질감 알갱이 크기가 그림과 같다 */
-  background: #0A1DB9 url(../img/showcase-blue-grain.webp) repeat center;
+.showcase-frame { z-index: 2; }
+
+/* 꽉 찬 상태에서는 그림이 아주 천천히 숨 쉬듯 커졌다 작아진다(살아 있는 느낌). 줄어들기 시작하면 멈춘다 */
+.showcase .showcase-frame .thumb {
+  transition: transform 0.8s ease;
 }
 
-/* 큰 프레임의 그림은 잘리지 않고 통째로 가운데에 놓인다 — 화면이 정사각형이 아닐 때는 파란 바탕이 양옆(또는 위아래)을 채운다 */
-.showcase .showcase-frame .thumb {
-  object-fit: contain;
-  object-position: center;
-  background: transparent;   /* 그림 밖 남는 자리는 이미지의 회색 바탕이 아니라 프레임의 파랑이 보이게 */
+.showcase .showcase-frame.is-full .thumb {
+  animation: showcase-breathe 14s ease-in-out infinite alternate;
+}
+
+@keyframes showcase-breathe {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase .showcase-frame.is-full .thumb { animation: none; }
 }
 .showcase-tile { z-index: 1; }
 
@@ -1587,7 +1586,7 @@ img.detail-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: top;   /* 화면을 채울 때 위쪽을 기준으로 두고 아래만 잘린다 */
+  object-position: center;
   background: var(--surface);
   display: block;
   margin: 0;
@@ -1598,5 +1597,4 @@ img.detail-image {
     --pad: 18px;
   }
 
-  .hero-pinned { top: 60px; }
 }

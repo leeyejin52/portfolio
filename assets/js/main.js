@@ -367,28 +367,9 @@ function detailURL(p) {
   return ROOT + 'projects/detail.html?id=' + p.id;
 }
 
-// 홈 소개(붙어 있는 첫 화면): 쇼케이스가 위로 덮어 오는 동안 글이 크기 그대로 위로 조금 밀려 올라간다.
-// --cover 는 덮이기 시작(0)부터 완전히 덮임(1)까지. 값은 스크롤 위치에 묶여 있어 되감으면 되돌아온다.
-// 완전히 덮인 뒤에는 숨겨서, 쇼케이스가 작아진 뒤 타일 사이로 비치지 않게 한다.
-(function () {
-  var hero = document.querySelector('.hero-pinned');
-  var next = hero && hero.nextElementSibling;
-  if (!hero || !next) return;
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var update = function () {
-    var span = next.getBoundingClientRect().top + window.scrollY;   // 다음 구역이 화면 맨 위에 닿는 스크롤 위치
-    var cover = span > 0 ? Math.max(0, Math.min(1, window.scrollY / span)) : 1;
-    hero.style.setProperty('--cover', reduce ? 0 : cover.toFixed(3));
-    hero.classList.toggle('is-covered', cover >= 1);
-  };
-  update();
-  if (lenis) lenis.on('scroll', update);
-  window.addEventListener('scroll', update, { passive: true });
-})();
-
 // 홈 쇼케이스 — brand.squarespace.com/campaign 의 인트로를 따른다.
-// 0단계(0.3화면): 첫 프로젝트 한 장이 화면을 꽉 채운 채 잠깐 머문다.
-// 1단계(1.3화면): 그 장이 작아져 가운데 타일이 된다.
+// 0단계(0.15화면): 첫 프로젝트(16:9 이미지)가 화면을 꽉 채운 채 잠깐 머문다.
+// 1단계(1.3화면): 비율을 거의 유지한 채 균일하게 작아져 가운데 16:9 타일이 된다.
 // 2단계(1.5화면): 그 타일이 왼쪽으로 가고 나머지가 오른쪽에서 들어와 한 줄이 된다.
 // 3단계(줄이 화면보다 길 때만): 계속 스크롤하면 줄이 왼쪽으로 흐른다. 모두 스크롤 위치에 묶여 있다(되감기 가능).
 function renderShowcase(section, projects) {
@@ -408,7 +389,6 @@ function renderShowcase(section, projects) {
   var frame = sticky.querySelector('.showcase-frame');
   var tiles = Array.prototype.slice.call(sticky.querySelectorAll('.showcase-tile'));
   var navicon = document.querySelector('.navicon');
-  var frameImg = frame.querySelector('img');
   var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
   var lerp = function (a, b, t) { return a + (b - a) * t; };
   // 축소 곡선: 처음과 끝은 느리고 가운데가 가파른 가감속 (측정값에 맞춤)
@@ -421,10 +401,10 @@ function renderShowcase(section, projects) {
     navH = parseFloat(getComputedStyle(section).getPropertyValue('--nav-h')) || 0;
     pad = parseFloat(getComputedStyle(section).getPropertyValue('--pad')) || 32;
     stageH = window.innerHeight - navH;
-    W1 = clamp(vw * 0.243, 180, 400); H1 = W1;   // 축소 직후 타일 (정사각형)
-    W2 = clamp(vw * 0.157, 120, 260); H2 = W2;   // 줄에 섰을 때 타일 (정사각형)
+    W1 = clamp(vw * 0.243, 180, 400); H1 = W1 * 9 / 16;   // 축소 직후 타일 (16:9)
+    W2 = clamp(vw * 0.175, 130, 290); H2 = W2 * 9 / 16;   // 줄에 섰을 때 타일 (16:9)
     G1 = W1 * GAP_RATIO; G2 = W2 * GAP_RATIO;               // 각 단계의 타일 사이 간격
-    F = stageH * 0.3;                                       // 꽉 찬 채 머무는 구간
+    F = stageH * 0.15;                                      // 꽉 찬 채 머무는 구간
     A = stageH * 1.3;                                       // 축소 구간
     B = stageH * 1.5;                                       // 줄로 모이는 구간
     overflow = Math.max(0, pad + n * W2 + (n - 1) * G2 + pad - vw);   // 줄이 화면보다 긴 만큼
@@ -449,42 +429,17 @@ function renderShowcase(section, projects) {
     var drift = -pC * overflow;
     var cy = stageH / 2;
 
-    // 큰 프레임: 꽉 찬 화면 → 가운데 정사각 타일(1단계) → 왼쪽 끝 작은 타일(2단계)
-    // 그림은 정사각형 비율을 지킨 채 가운데를 중심으로 고르게 작아진다.
-    // 꽉 찼을 때는 그림을 화면의 긴 변만큼 키워 화면을 다 덮고(위아래는 잘림),
-    // 프레임은 화면과 그림이 겹치는 부분만큼만 그리므로 그림이 화면보다 작아지는 순간부터 정사각형이 된다
-    var w, h, x, y, G;
+    // 큰 프레임: 꽉 찬 화면 → 가운데 타일(1단계) → 왼쪽 끝 작은 타일(2단계). 이미지가 16:9라 비율 보정 없이 크기만 줄인다
+    var w, h, x, y;
     if (pB === 0) {
-      G = lerp(Math.max(vw, stageH), W1, eA);       // 그림 한 변
-      w = Math.min(vw, G); h = Math.min(stageH, G);
-      x = (vw - w) / 2; y = (stageH - h) / 2;
+      w = lerp(vw, W1, eA); h = lerp(stageH, H1, eA);
     } else {
-      w = lerp(W1, W2, eB); h = w; x = lerp((vw - W1) / 2, pad, eB);
-      y = cy - h / 2;
-      G = w;
+      w = lerp(W1, W2, eB); h = lerp(H1, H2, eB);
     }
-    // 그림을 프레임 가운데에 G×G로 놓는다 (프레임보다 크면 넘치는 부분이 잘린다)
-    if (frameImg) {
-      frameImg.style.width = G.toFixed(1) + 'px';
-      frameImg.style.height = G.toFixed(1) + 'px';
-      frameImg.style.left = ((w - G) / 2).toFixed(1) + 'px';
-      frameImg.style.top = ((h - G) / 2).toFixed(1) + 'px';
-    }
+    x = pB === 0 ? (vw - w) / 2 : lerp((vw - W1) / 2, pad, eB);
+    y = (stageH - h) / 2;
+    frame.classList.toggle('is-full', pA === 0);
     place(frame, x + drift, y, w, h);
-    // 넓힌 바탕의 질감 조각(400px, 2400px 그림 기준)을 그림이 실제로 보이는 배율에 맞춘다
-    var natW = frameImg && frameImg.naturalWidth || 2400, natH = frameImg && frameImg.naturalHeight || 2437;
-    var grain = 400 * G / natW;
-    frame.style.backgroundSize = grain.toFixed(2) + 'px';
-
-    // 큰 프레임이 햄버거 아이콘 자리를 덮으면 아이콘을 흰색으로 (이미지가 어두우므로)
-    if (navicon) {
-      var nb = navicon.getBoundingClientRect();
-      var sb = sticky.getBoundingClientRect();
-      var fx = sb.left + x + drift, fy = sb.top + y;
-      var covers = fx <= nb.left && fx + w >= nb.right && fy <= nb.top && fy + h >= nb.bottom;
-      navicon.classList.toggle('on-dark', covers);
-    }
-
     // 나머지 타일: 화면 오른쪽 바깥에서 기다리다(축소 중에는 보이지 않음) 줄로 모일 때 들어온다
     var tw = lerp(W1, W2, eB), th = lerp(H1, H2, eB);
     tiles.forEach(function (t, k) {
