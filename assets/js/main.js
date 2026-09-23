@@ -367,9 +367,85 @@ function detailURL(p) {
   return ROOT + 'projects/detail.html?id=' + p.id;
 }
 
+// 홈 첫 화면 바탕: 참고 화면에서 잰 색 조합과 비율(w)로 화면을 빈틈없이 채우는 색 막대 블록.
+// 배치는 고정 씨앗의 난수로 만들어 열 때마다 같다(화면 폭이 같으면 같은 그림).
+// 가로 띠마다 높이가 다르고, 띠 안은 폭이 제각각인 막대가 이어진다. 움직이지 않고 멈춰 있다.
+(function () {
+  var canvas = document.querySelector('.hero-blocks');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var PALETTE = [
+    { hex: '#F1B6D3', w: 0.046 },
+    { hex: '#FA2513', w: 0.176 },
+    { hex: '#B1D5B2', w: 0.115 },
+    { hex: '#3067F6', w: 0.117 },
+    { hex: '#35C278', w: 0.122 },
+    { hex: '#FA3472', w: 0.05 },
+    { hex: '#F9DE2B', w: 0.101 },
+    { hex: '#402EB3', w: 0.155 },
+    { hex: '#CCCEC9', w: 0.119 }
+  ];
+  var totalW = PALETTE.reduce(function (a, p) { return a + p.w; }, 0);
+  // 고정 씨앗 난수(mulberry32): 매번 같은 순서의 값을 내놓는다
+  var seed = 20220922;
+  function rnd() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+  function pick() {
+    var r = rnd() * totalW;
+    for (var i = 0; i < PALETTE.length; i++) { r -= PALETTE[i].w; if (r <= 0) return PALETTE[i].hex; }
+    return PALETTE[PALETTE.length - 1].hex;
+  }
+  var rand = function (a, b) { return a + rnd() * (b - a); };
+
+  var W = 0, H = 0, dpr = 1, rows = [];
+  function build() {
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    rows = [];
+    seed = 20220922;   // 다시 그릴 때도 같은 배치
+    var y = 0;
+    while (y < H) {
+      var h = rand(22, 64);
+      // 띠 하나: 화면 폭의 두 배만큼 막대를 만들어 두고 흘러가며 되감는다
+      var bars = [], x = 0, span = W * 2;
+      while (x < span) {
+        var w = rand(6, 46);
+        bars.push({ x: x, w: w, c: pick() });
+        x += w;
+      }
+      rows.push({ y: y, h: h, bars: bars, span: x, off: rand(0, x), v: 0 });
+      y += h;
+    }
+  }
+  function draw(dt) {
+    ctx.clearRect(0, 0, W, H);
+    rows.forEach(function (r) {
+      if (!reduce) { r.off = (r.off + r.v * dt) % r.span; if (r.off < 0) r.off += r.span; }
+      for (var i = 0; i < r.bars.length; i++) {
+        var b = r.bars[i];
+        var x = b.x - r.off;
+        if (x + b.w < 0) x += r.span;           // 왼쪽으로 빠져나간 막대는 오른쪽 끝으로 되감는다
+        if (x > W) continue;
+        ctx.fillStyle = b.c;
+        ctx.fillRect(x, r.y, b.w + 0.5, r.h + 0.5);
+      }
+    });
+  }
+  build();
+  draw(0);
+  window.addEventListener('resize', function () { build(); draw(0); });
+})();
+
 // 홈 쇼케이스 — brand.squarespace.com/campaign 의 인트로를 따른다.
-// 0단계(0.15화면): 첫 프로젝트(16:9 이미지)가 화면을 꽉 채운 채 잠깐 머문다.
-// 1단계(1.3화면): 비율을 거의 유지한 채 균일하게 작아져 가운데 16:9 타일이 된다.
+// 0단계(0.15화면): 파란 바탕이 화면을 다 덮고 정사각 그림이 화면 높이에 맞게 잘리지 않고 놓인 채 잠깐 머문다.
+// 1단계(1.3화면): 정사각형 그대로 균일하게 작아져 가운데 타일이 된다.
 // 2단계(1.5화면): 그 타일이 왼쪽으로 가고 나머지가 오른쪽에서 들어와 한 줄이 된다.
 // 3단계(줄이 화면보다 길 때만): 계속 스크롤하면 줄이 왼쪽으로 흐른다. 모두 스크롤 위치에 묶여 있다(되감기 가능).
 function renderShowcase(section, projects) {
@@ -381,7 +457,7 @@ function renderShowcase(section, projects) {
   var GAP_RATIO = 0.31;          // 타일 사이 간격 = 타일 너비의 31% (어느 단계에서든 유지)
 
   sticky.innerHTML =
-    '<a class="showcase-frame" data-i="0" href="' + detailURL(projects[0]) + '">' + thumbHTML(projects[0]) + '</a>' +
+    '<a class="showcase-frame" data-i="0" href="' + detailURL(projects[0]) + '"><span class="showcase-clip">' + thumbHTML(projects[0]) + '</span></a>' +
     projects.slice(1).map(function (p, k) {
       return '<a class="showcase-tile" data-i="' + (k + 1) + '" href="' + detailURL(p) + '">' + thumbHTML(p) + '</a>';
     }).join('');
@@ -389,6 +465,10 @@ function renderShowcase(section, projects) {
   var frame = sticky.querySelector('.showcase-frame');
   var tiles = Array.prototype.slice.call(sticky.querySelectorAll('.showcase-tile'));
   var navicon = document.querySelector('.navicon');
+  var heroHome = document.querySelector('.hero-home');
+  var frameImg = frame.querySelector('img');
+  var frameClip = frame.querySelector('.showcase-clip');
+  if (frameClip) { frameClip.style.cssText = 'position:absolute;inset:0;display:block;overflow:hidden'; }
   var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
   var lerp = function (a, b, t) { return a + (b - a) * t; };
   // 축소 곡선: 처음과 끝은 느리고 가운데가 가파른 가감속 (측정값에 맞춤)
@@ -401,8 +481,8 @@ function renderShowcase(section, projects) {
     navH = parseFloat(getComputedStyle(section).getPropertyValue('--nav-h')) || 0;
     pad = parseFloat(getComputedStyle(section).getPropertyValue('--pad')) || 32;
     stageH = window.innerHeight - navH;
-    W1 = clamp(vw * 0.243, 180, 400); H1 = W1 * 9 / 16;   // 축소 직후 타일 (16:9)
-    W2 = clamp(vw * 0.175, 130, 290); H2 = W2 * 9 / 16;   // 줄에 섰을 때 타일 (16:9)
+    W1 = clamp(vw * 0.243, 180, 400); H1 = W1;   // 축소 직후 타일 (정사각형 — 가로형 이미지는 양옆이 잘린다)
+    W2 = clamp(vw * 0.175, 130, 290); H2 = W2;   // 줄에 섰을 때 타일 (정사각형)
     G1 = W1 * GAP_RATIO; G2 = W2 * GAP_RATIO;               // 각 단계의 타일 사이 간격
     F = stageH * 0.15;                                      // 꽉 찬 채 머무는 구간
     A = stageH * 1.3;                                       // 축소 구간
@@ -429,17 +509,42 @@ function renderShowcase(section, projects) {
     var drift = -pC * overflow;
     var cy = stageH / 2;
 
-    // 큰 프레임: 꽉 찬 화면 → 가운데 타일(1단계) → 왼쪽 끝 작은 타일(2단계). 이미지가 16:9라 비율 보정 없이 크기만 줄인다
-    var w, h, x, y;
+    // 큰 프레임: 내내 정사각형. 꽉 찼을 때는 화면의 긴 변 크기라 파란 바탕이 화면을 다 덮고,
+    // 그 안의 이미지는 정사각 그림이 화면의 짧은 변에 딱 맞도록 놓여 그림이 잘리지 않는다.
+    // 거기서 가운데 정사각 타일(1단계) → 왼쪽 끝 작은 타일(2단계)로 크기만 줄어들고,
+    // 이미지는 줄어드는 동안 프레임을 꽉 채우는 크기(타일에서는 양옆 파란 부분만 잘림)로 수렴한다
+    var w, h, x, y, imgH;
     if (pB === 0) {
-      w = lerp(vw, W1, eA); h = lerp(stageH, H1, eA);
+      w = h = lerp(Math.max(vw, stageH), W1, eA);
+      imgH = lerp(Math.min(vw, stageH) * 0.86 / 0.9, W1, eA);   // 그림(이미지 높이의 90%)이 화면 짧은 변의 86%가 되게 — 위아래 7%씩 파란 여백
     } else {
-      w = lerp(W1, W2, eB); h = lerp(H1, H2, eB);
+      w = h = lerp(W1, W2, eB);
+      imgH = h;
     }
     x = pB === 0 ? (vw - w) / 2 : lerp((vw - W1) / 2, pad, eB);
     y = (stageH - h) / 2;
+    if (frameImg) {
+      var natW = frameImg.naturalWidth || 3200, natH = frameImg.naturalHeight || 1800;
+      var imgW = imgH * natW / natH;
+      frameImg.style.width = imgW.toFixed(1) + 'px';
+      frameImg.style.height = imgH.toFixed(1) + 'px';
+      frameImg.style.left = ((w - imgW) / 2).toFixed(1) + 'px';
+      frameImg.style.top = ((h - imgH) / 2).toFixed(1) + 'px';
+      // 이미지 밖 프레임 자리는 같은 파란 질감으로: 질감 조각(400px, 2400px 그림 기준)을 이미지 배율에 맞춘다
+      frame.style.backgroundSize = (400 * 0.62 * imgH / natH).toFixed(2) + 'px';
+    }
     frame.classList.toggle('is-full', pA === 0);
     place(frame, x + drift, y, w, h);
+
+    // 큰 프레임이 햄버거 아이콘 자리를 덮거나, 색 블록이 깔린 첫 화면 위에 있으면 아이콘을 흰색으로
+    if (navicon) {
+      var nb = navicon.getBoundingClientRect();
+      var sb = sticky.getBoundingClientRect();
+      var fx = sb.left + x + drift, fy = sb.top + y;
+      var covers = fx <= nb.left && fx + w >= nb.right && fy <= nb.top && fy + h >= nb.bottom;
+      var onHero = !!heroHome && heroHome.getBoundingClientRect().bottom >= nb.bottom;
+      navicon.classList.toggle('on-dark', covers || onHero);
+    }
     // 나머지 타일: 화면 오른쪽 바깥에서 기다리다(축소 중에는 보이지 않음) 줄로 모일 때 들어온다
     var tw = lerp(W1, W2, eB), th = lerp(H1, H2, eB);
     tiles.forEach(function (t, k) {
@@ -835,7 +940,7 @@ if (awardsList) {
 
 // 스크롤 안내: 아래에 내용이 더 있다는 표시. 홈에서만 띄우고, 스크롤을 시작하면 사라진다
 (function () {
-  if (!document.getElementById('home-grid') && !document.getElementById('showcase')) return;
+  if (!document.getElementById('home-grid')) return;   // 쇼케이스 홈에서는 띄우지 않는다
   // 스크롤할 게 없으면 띄우지 않는다
   if (document.documentElement.scrollHeight <= window.innerHeight + 40) return;
 

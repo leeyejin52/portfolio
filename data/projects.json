@@ -2,15 +2,15 @@
   "projects": [
     {
       "id": 1,
-      "title": "인간-인공지능의 창의적 공동 창작 경험 설계를 위한 UX 디자인 가이드라인 연구",
-      "category": "Research",
+      "title": "Graphic Amusement Park",
+      "category": "Craft & Visual",
       "types": [
-        "Research"
+        "Craft & Visual"
       ],
-      "year": "2026",
-      "periodLabel": "2026.08",
-      "period": "2026.08",
-      "org": "SeoulTech Graduate School",
+      "year": "2022",
+      "periodLabel": "2022",
+      "period": "2022",
+      "org": "개인 작업",
       "summary": "프로젝트 요약이 들어갈 자리입니다.",
       "overview": "배경과 목표가 들어갈 자리입니다.",
       "process": "무엇을 어떻게 했는지가 들어갈 자리입니다.",

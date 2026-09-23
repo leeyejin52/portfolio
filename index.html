@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yejin Lee — Portfolio</title>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=20260923a">
   <link rel="icon" href="assets/favicon.svg">
 </head>
 <body>
@@ -43,6 +43,7 @@
             <a href="projects.html?year=2025">2025</a>
             <a href="projects.html?year=2024">2024</a>
             <a href="projects.html?year=2023">2023</a>
+            <a href="projects.html?year=2022">2022</a>
           </div>
         </div>
       </div>
@@ -142,11 +143,18 @@
 
   <!-- 첫 화면: 소개 텍스트(왼쪽 아래). 그냥 스크롤로 지나가고 바로 아래에 쇼케이스가 이어진다 -->
   <header class="hero hero-home">
+    <canvas class="hero-blocks" aria-hidden="true"></canvas>
     <div class="container">
-      <p class="role">Role · Discipline</p>
       <h1>Positioning statement,<br>up to two lines</h1>
     </div>
   </header>
+
+  <!-- 소개 아래 흰 띠: 한 줄 문장 -->
+  <section class="hero-note">
+    <div class="container">
+      <p>A one-line statement about what I design and why it matters goes here.</p>
+    </div>
+  </section>
 
   <!-- 소개 아래: 프로젝트 하나가 화면을 꽉 채웠다가, 스크롤하면 작아지며 전체 프로젝트 줄로 모인다
        (내용은 data/projects.json, 그리기는 main.js의 renderShowcase) -->
@@ -193,7 +201,7 @@
   </footer>
 
   <script src="https://unpkg.com/lenis@1.3.4/dist/lenis.min.js"></script>
-  <script src="assets/js/main.js"></script>
+  <script src="assets/js/main.js?v=20260923a"></script>
 
 </body>
 </html>
