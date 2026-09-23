@@ -550,7 +550,7 @@ function renderShowcase(section, projects) {
     W1 = clamp(vw * 0.243, 180, 400); H1 = W1;   // 축소 직후 타일 (정사각형 — 가로형 이미지는 양옆이 잘린다)
     W2 = clamp(vw * 0.175, 130, 290); H2 = W2;   // 줄에 섰을 때 타일 (정사각형)
     G1 = W1 * GAP_RATIO; G2 = W2 * GAP_RATIO;               // 각 단계의 타일 사이 간격
-    F = stageH * 0.15;                                      // 꽉 찬 채 머무는 구간
+    F = stageH * 0.6;                                       // 꽉 찬 채 머무는 구간 (화면 0.6개분 스크롤해야 줄어들기 시작)
     A = stageH * 1.3;                                       // 축소 구간
     B = stageH * 1.5;                                       // 줄로 모이는 구간
     overflow = Math.max(0, pad + n * W2 + (n - 1) * G2 + pad - vw);   // 줄이 화면보다 긴 만큼

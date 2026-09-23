@@ -1566,7 +1566,7 @@ img.detail-image {
   align-items: center;
   justify-content: center;
   background: var(--bg);
-  text-align: center;
+  text-align: right;        /* 한 줄 문장은 오른쪽 가장자리에 붙여 큼직하게 */
 }
 
 /* 문장은 흰 화면이 맨 위에 닿으면(main.js가 .is-in을 붙인다) 아래에서 떠오르며 나타난다 */
@@ -1586,10 +1586,23 @@ img.detail-image {
   .hero-note p, .hero-note.is-in p { transform: none; transition: opacity 0.3s ease; }
 }
 
+.hero-note .container {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  transform-origin: right center;   /* 스크롤로 커질 때 오른쪽 가장자리를 기준으로 커진다 */
+}
+
 .hero-note p {
-  font-size: var(--fs-12);
+  font-size: calc(var(--fs-52) * 1.5);   /* 소개 제목(2배)보다 한 단계 작은 큰 글자 */
+  line-height: 1.15;
+  letter-spacing: -0.01em;
   color: var(--ink);
   margin: 0;
+}
+
+@media (max-width: 720px) {
+  .hero-note p { font-size: calc(var(--fs-52) * 0.9); }
 }
 
 
