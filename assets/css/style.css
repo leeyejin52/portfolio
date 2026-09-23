@@ -67,7 +67,7 @@ a {
 .nav {
   position: sticky;
   top: 0;
-  background: var(--bg);
+  background: transparent;   /* 모든 페이지: 흰 띠 없이 햄버거만 떠 있다(내용이 그 아래로 지나간다) */
   z-index: 20;
 }
 
