@@ -28,6 +28,7 @@
   --bg: #FFFFFF;
   --ink: #000000;
   --surface: #ECECEC;
+  --nav-h-page: 72px;        /* 상단 내비 띠 높이(폰은 60px). 첫 화면을 이만큼 위로 끌어올려 화면 맨 위부터 채운다 */
   --fs-12: 12pt;
   --fs-14: 12pt;
   --fs-24: 16pt;
@@ -1235,13 +1236,7 @@ img.detail-image {
     padding: 32px 0;
   }
 
-  .hero-home {
-    padding-bottom: 18px;
-    margin-top: -60px;
-    padding-top: 60px;
-    min-height: 100vh;
-    min-height: 100dvh;
-  }
+  :root { --nav-h-page: 60px; }   /* 폰 내비 띠 높이 → 첫 화면 끌어올리는 값도 60px */
 
   .hero .dot,
   .hero-image .dot,
@@ -1599,7 +1594,7 @@ img.detail-image {
   top: 0;
   z-index: 1;               /* 멈춰 있는 소개 위로 올라온다 */
   height: 100vh;
-  height: 100dvh;
+  height: 100lvh;           /* 폰: 주소창이 접힌 큰 화면 높이 — 어느 상태에서든 아래가 비지 않는다 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1664,9 +1659,10 @@ img.detail-image {
 .hero-home {
   position: relative;
   overflow: hidden;
-  margin-top: -72px;     /* 투명한 내비 뒤까지 블록이 채우도록 화면 맨 위부터 시작 */
-  padding-top: 72px;
+  margin-top: calc(-1 * var(--nav-h-page));   /* 투명한 내비 뒤까지 블록이 채우도록 화면 맨 위부터 시작 (폰은 60px) */
+  padding-top: var(--nav-h-page);
   min-height: 100vh;
+  min-height: 100lvh;    /* 폰: 주소창이 접힌 큰 화면 높이. 주소창이 보일 때는 그 밑까지 넘치게 채운다 */
 }
 
 /* 첫 화면 바탕: 참고 영상의 색 조합·비율로 채운 색 막대 블록(main.js가 그린다). 글 뒤에 깔린다 */
@@ -1703,6 +1699,7 @@ img.detail-image {
   position: sticky;
   top: var(--nav-h);
   height: calc(100vh - var(--nav-h));
+  height: calc(100lvh - var(--nav-h));
   overflow: hidden;
 }
 
