@@ -141,12 +141,38 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
   document.body.appendChild(cursorDot);
   document.documentElement.classList.add('custom-cursor');
 
+  // 커서 색: 햄버거처럼, 어두운 바탕(색 블록 첫 화면·쇼케이스 이미지) 위에서는 흰 원, 그 밖에서는 검은 원.
+  // 포인터 자리에 실제로 무엇이 보이는지(위에서부터) 찾아 판정한다. 투명한 내비 띠는 건너뛰고 그 아래를 본다.
+  var DARK = '.hero-home, .showcase-frame, .showcase-tile';
+  var px = -1, py = -1, tintQueued = false;
+  function tint() {
+    tintQueued = false;
+    if (px < 0) return;
+    var dark = false;
+    var stack = document.elementsFromPoint(px, py);
+    for (var i = 0; i < stack.length; i++) {
+      var el = stack[i];
+      if (el === cursorDot) continue;
+      if (el.closest('.nav-index.open')) break;                                   // 열린 메뉴(흰 패널) 위
+      if (el.closest('.nav-clear') && !el.closest('.nav-index')) continue;        // 투명한 내비 띠: 그 아래가 보인다
+      dark = !!el.closest(DARK);
+      break;
+    }
+    cursorDot.classList.toggle('on-dark', dark);
+  }
+  function queueTint() { if (!tintQueued) { tintQueued = true; requestAnimationFrame(tint); } }
+
   // pointermove로 듣는다 — 점을 잡을 때 pointerdown 기본 동작을 막으면 mousemove가 끊기기 때문
   document.addEventListener('pointermove', function (e) {
     if (e.pointerType !== 'mouse') return;
-    cursorDot.style.transform = 'translate3d(' + e.clientX + 'px, ' + e.clientY + 'px, 0)';
+    px = e.clientX; py = e.clientY;
+    cursorDot.style.transform = 'translate3d(' + px + 'px, ' + py + 'px, 0)';
     cursorDot.classList.add('on');
+    queueTint();
   });
+  // 포인터가 가만히 있어도 스크롤로 바탕이 바뀌면 다시 판정
+  window.addEventListener('scroll', queueTint, { passive: true });
+  if (lenis) lenis.on('scroll', queueTint);
 
   document.addEventListener('mouseleave', function () {
     cursorDot.classList.remove('on');

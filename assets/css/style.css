@@ -80,6 +80,9 @@ a {
   justify-content: space-between;
 }
 
+.nav:has(.nav-index.open) .navicon { transform: translateX(3px); }   /* X는 햄버거보다 좁아 보여서 오른쪽 선에 맞춰 3px 민다 */
+.navicon { transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1); }
+
 .navicon span {
   display: block;
   width: 100%;
@@ -149,7 +152,7 @@ a {
   align-items: flex-end;      /* 글자를 오른쪽 가장자리에 붙인다 */
   text-align: right;
   gap: 40px;
-  padding: 104px 48px 48px;   /* 위는 내비 띠(72px) 아래부터 */
+  padding: 104px 32px 48px 48px;   /* 위는 내비 띠(72px) 아래부터. 오른쪽은 내비 여백(32px)과 같게 — X·라벨·항목의 오른쪽 선이 하나 */
 }
 
 /* 항목이 하나씩 차례로 내려앉는다.
@@ -186,14 +189,15 @@ a {
   gap: 8px;
   /* 메뉴 항목은 제목 크기(42pt)까지 큼직하게. 단, 항목 10개가 스크롤 없이 화면 안에 다 들어가도록
      화면이 낮으면 그만큼 줄어든다(위아래 여백·라벨·간격을 뺀 높이를 10줄로 나눈 값) */
-  font-size: clamp(18pt, calc((100vh - 360px) / 11), var(--fs-52));
-  font-size: clamp(18pt, calc((100dvh - 360px) / 11), var(--fs-52));
+  font-size: clamp(18pt, min(calc((100vh - 360px) / 11), calc((50vw - 90px) / 9.6)), var(--fs-52));
+  font-size: clamp(18pt, min(calc((100dvh - 360px) / 11), calc((50vw - 90px) / 9.6)), var(--fs-52));
   line-height: 1.1;
   letter-spacing: -0.01em;
 }
 
 .group-links a {
   padding: 0 6px;
+  margin-right: calc(-6px - 0.04em);   /* 바탕 패딩만큼 밖으로, 글자 오른쪽 빈틈(약 0.04em)만큼 더 — 잉크 끝이 기준선에 닿는 시각 보정 */
   border-radius: 2px;
   transition: background-color 0.15s ease;
 }
@@ -240,9 +244,14 @@ a {
   opacity: 1;
 }
 
+/* 어두운 바탕(색 블록·쇼케이스 이미지) 위에서는 흰 원 — 판정은 main.js */
+.cursor-dot.on-dark {
+  border-color: #fff;
+}
+
 /* 배경 점 위에 있거나 잡고 있을 때: 링이 점을 감싸는 크기로 커진다 */
 .cursor-dot {
-  transition: width 0.15s, height 0.15s, margin 0.15s;
+  transition: width 0.15s, height 0.15s, margin 0.15s, border-color 0.15s;
 }
 
 .cursor-dot.grab {
@@ -1183,6 +1192,7 @@ img.detail-image {
     --h: 12px;               /* 내비 60px 안에서 위 여백 24px */
     width: 20px;
   }
+  .nav:has(.nav-index.open) .navicon { transform: translateX(2px); }   /* 20px 아이콘은 X가 2px 들어가 보인다 */
 
   .nav-index { width: 100%; }  /* 폰에서는 화면 전체 */
 
