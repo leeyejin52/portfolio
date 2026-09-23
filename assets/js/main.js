@@ -650,7 +650,8 @@ function renderShowcase(section, projects) {
     navH = parseFloat(getComputedStyle(section).getPropertyValue('--nav-h')) || 0;
     pad = parseFloat(getComputedStyle(section).getPropertyValue('--pad')) || 32;
     stageH = fullH() - navH;
-    S0 = Math.max(vw, stageH);                    // 꽉 찼을 때 프레임(정사각형) 한 변
+    var underBar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--under-bar')) || 0;
+    S0 = Math.max(vw, stageH + underBar);         // 꽉 찼을 때 프레임(정사각형) 한 변: 화면보다 커서 폰 주소창 뒤까지 덮는다
     W1 = clamp(vw * 0.243, 180, 400); H1 = W1;   // 축소 직후 타일 (정사각형 — 가로형 이미지는 양옆이 잘린다)
     W2 = clamp(vw * 0.175, 130, 290); H2 = W2;   // 줄에 섰을 때 타일 (정사각형)
     G1 = W1 * GAP_RATIO; G2 = W2 * GAP_RATIO;               // 각 단계의 타일 사이 간격
