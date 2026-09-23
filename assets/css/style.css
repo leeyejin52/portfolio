@@ -6,6 +6,15 @@
    ============================================ */
 
 @import url('https://fonts.googleapis.com/css?family=Google+Sans:400&display=swap');
+
+/* 홈 제목 전용 서체: PP Valve Plain Medium (Pangram Pangram, 개인 사용 무료판). 다른 곳에는 쓰지 않는다 */
+@font-face {
+  font-family: 'PP Valve Plain';
+  src: url('../fonts/PPValve-PlainMedium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
 @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css');
 
 :root {
@@ -1660,6 +1669,8 @@ img.detail-image {
 }
 
 .hero-home h1 {
+  font-family: 'PP Valve Plain', 'Google Sans', sans-serif;
+  font-weight: 500;
   color: #fff;                         /* 색 블록 위에서는 흰 글자 */
   font-size: calc(var(--fs-52) * 2);   /* 기본 제목의 2배 */
   line-height: 1.1;
