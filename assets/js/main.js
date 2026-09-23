@@ -12,6 +12,38 @@ if (window.Lenis) {
   });
 }
 
+// 홈 첫 화면 색 블록의 색 조합과 비율(w). 배경 점도 같은 색을 쓴다
+var HERO_PALETTE = [
+  { hex: '#F1B6D3', w: 0.046 },
+  { hex: '#FA2513', w: 0.176 },
+  { hex: '#B1D5B2', w: 0.115 },
+  { hex: '#3067F6', w: 0.117 },
+  { hex: '#35C278', w: 0.122 },
+  { hex: '#FA3472', w: 0.05 },
+  { hex: '#F9DE2B', w: 0.101 },
+  { hex: '#402EB3', w: 0.155 },
+  { hex: '#CCCEC9', w: 0.119 }
+];
+
+// 배경 점: 첫 화면 색 블록과 같은 색을 같은 비율로 입힌다. 고정 씨앗이라 열 때마다 같은 배치
+(function () {
+  var dots = document.querySelectorAll('.hero-image .dot');
+  if (!dots.length) return;
+  var total = HERO_PALETTE.reduce(function (a, p) { return a + p.w; }, 0);
+  var seed = 7;
+  function rnd() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+  dots.forEach(function (d) {
+    var r = rnd() * total, c = HERO_PALETTE[HERO_PALETTE.length - 1].hex;
+    for (var i = 0; i < HERO_PALETTE.length; i++) { r -= HERO_PALETTE[i].w; if (r <= 0) { c = HERO_PALETTE[i].hex; break; } }
+    d.style.background = c;
+  });
+})();
+
 // 페이지 진입 전환: 노란 점이 글리치와 함께 잠깐 스쳤다 사라진다
 // 홈은 배경에 점이 이미 있으므로, 새 점을 띄우지 않고 그 점들이 등장할 때 같은 글리치를 입힌다
 (function () {
@@ -375,17 +407,7 @@ function detailURL(p) {
   if (!canvas) return;
   var ctx = canvas.getContext('2d');
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var PALETTE = [
-    { hex: '#F1B6D3', w: 0.046 },
-    { hex: '#FA2513', w: 0.176 },
-    { hex: '#B1D5B2', w: 0.115 },
-    { hex: '#3067F6', w: 0.117 },
-    { hex: '#35C278', w: 0.122 },
-    { hex: '#FA3472', w: 0.05 },
-    { hex: '#F9DE2B', w: 0.101 },
-    { hex: '#402EB3', w: 0.155 },
-    { hex: '#CCCEC9', w: 0.119 }
-  ];
+  var PALETTE = HERO_PALETTE;
   var totalW = PALETTE.reduce(function (a, p) { return a + p.w; }, 0);
   // 고정 씨앗 난수(mulberry32): 매번 같은 순서의 값을 내놓는다
   var seed = 20220922;
@@ -443,6 +465,49 @@ function detailURL(p) {
   window.addEventListener('resize', function () { build(); draw(0); });
 })();
 
+// 홈 겹침 전환: 1(소개)·2(흰 화면)는 바탕이 제자리에 멈추고 다음 화면이 올라와 덮는다.
+// 덮이는 동안 그 화면의 글씨만은 덮는 화면과 같은 속도로 함께 올라간다 — 바탕은 남고 글씨는 밀려 나간다.
+(function () {
+  var pairs = [
+    { text: document.querySelector('.hero-home .container'), next: document.querySelector('.hero-note') },
+    { text: document.querySelector('.hero-note .container'), next: document.querySelector('.showcase'), grow: true }
+  ].filter(function (p) { return p.text && p.next; });
+  if (!pairs.length) return;
+  var note = document.querySelector('.hero-note');
+  var showcase = document.querySelector('.hero-stack .showcase');
+  var dotLayer = showcase && document.querySelector('.hero-image');
+  if (dotLayer) dotLayer.style.zIndex = 2;
+  var ticking = false;
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight;
+    pairs.forEach(function (p) {
+      var top = p.next.getBoundingClientRect().top;
+      var lift = Math.max(0, Math.min(vh, vh - top));   // 다음 화면이 올라온 만큼
+      var y = -lift, k = 1;
+      // 2의 문장: 흰 화면이 멈춘 뒤 3이 올라오기 전까지(머무는 거리) 스크롤하는 만큼 1 → 1.1배로 커진다
+      if (p.grow) {
+        var hold = parseFloat(getComputedStyle(p.next).marginTop) || 0;
+        var g = hold ? Math.max(0, Math.min(1, (hold - (top - vh)) / (hold * 0.8))) : 0;
+        k = 1 + 0.1 * g * g * (3 - 2 * g);
+      }
+      p.text.style.transform = (y || k !== 1) ? 'translate3d(0,' + y.toFixed(1) + 'px,0) scale(' + k.toFixed(4) + ')' : '';
+    });
+    // 배경 점: 홈에서는 흰 화면 위·쇼케이스 타일 아래 층에 두고, 쇼케이스 윗선부터 아래(푸터까지)만 보이게 잘라낸다
+    // (쇼케이스 바탕은 비어 있어 그 뒤의 흰 화면 위로 점이 떠다닌다. 1·2 화면에는 나오지 않는다)
+    if (dotLayer && showcase) {
+      var ct = Math.max(0, Math.min(vh, showcase.getBoundingClientRect().top));
+      dotLayer.style.clipPath = ct >= vh ? 'inset(100% 0 0 0)' : 'inset(' + ct.toFixed(1) + 'px 0 0 0)';
+    }
+    // 2의 문장: 흰 화면이 화면 맨 위에 닿는 순간 떠오르며 나타난다(시간으로 재생). 다시 내려가면 숨는다.
+    if (note) note.classList.toggle('is-in', note.getBoundingClientRect().top <= 1);
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  update();
+})();
+
 // 홈 쇼케이스 — brand.squarespace.com/campaign 의 인트로를 따른다.
 // 0단계(0.15화면): 파란 바탕이 화면을 다 덮고 정사각 그림이 화면 높이에 맞게 잘리지 않고 놓인 채 잠깐 머문다.
 // 1단계(1.3화면): 정사각형 그대로 균일하게 작아져 가운데 타일이 된다.
@@ -466,6 +531,7 @@ function renderShowcase(section, projects) {
   var tiles = Array.prototype.slice.call(sticky.querySelectorAll('.showcase-tile'));
   var navicon = document.querySelector('.navicon');
   var heroHome = document.querySelector('.hero-home');
+  var heroNote = document.querySelector('.hero-note');
   var frameImg = frame.querySelector('img');
   var frameClip = frame.querySelector('.showcase-clip');
   if (frameClip) { frameClip.style.cssText = 'position:absolute;inset:0;display:block;overflow:hidden'; }
@@ -534,6 +600,8 @@ function renderShowcase(section, projects) {
       frame.style.backgroundSize = (400 * 0.62 * imgH / natH).toFixed(2) + 'px';
     }
     frame.classList.toggle('is-full', pA === 0);
+    // 줄로 다 모인 뒤에만 마우스 올림 효과를 켠다(줄어드는 중에는 끔)
+    section.classList.toggle('is-row', pB >= 1);
     place(frame, x + drift, y, w, h);
 
     // 큰 프레임이 햄버거 아이콘 자리를 덮거나, 색 블록이 깔린 첫 화면 위에 있으면 아이콘을 흰색으로
@@ -542,7 +610,9 @@ function renderShowcase(section, projects) {
       var sb = sticky.getBoundingClientRect();
       var fx = sb.left + x + drift, fy = sb.top + y;
       var covers = fx <= nb.left && fx + w >= nb.right && fy <= nb.top && fy + h >= nb.bottom;
-      var onHero = !!heroHome && heroHome.getBoundingClientRect().bottom >= nb.bottom;
+      // 소개는 멈춰 있으므로, 흰 화면이 아직 아이콘까지 올라오지 않았을 때만 '색 블록 위'로 본다
+      var edge = heroNote ? heroNote.getBoundingClientRect().top : (heroHome ? heroHome.getBoundingClientRect().bottom : -1);
+      var onHero = !!heroHome && edge >= nb.bottom;
       navicon.classList.toggle('on-dark', covers || onHero);
     }
     // 나머지 타일: 화면 오른쪽 바깥에서 기다리다(축소 중에는 보이지 않음) 줄로 모일 때 들어온다
@@ -674,15 +744,13 @@ if (homeGrid || showcase || listGrid || detailRoot) {
         }).join('');
       }
 
-      // 리스트: 1열 나열, 이미지만 링크. 메뉴의 유형·연도가 곧 필터
+      // 리스트: 1열 나열, 이미지만 링크. 메뉴의 유형이 곧 필터
       if (listGrid) {
         var params = new URLSearchParams(location.search);
         var filterType = params.get('type');
-        var filterYear = params.get('year');
         var shown = projects.filter(function (p) {
           var typeOk = !filterType || (p.types || []).indexOf(filterType) !== -1;
-          var yearOk = !filterYear || p.year === filterYear;
-          return typeOk && yearOk;
+          return typeOk;
         });
         // 유형 필터일 때만 order(작을수록 앞)로 앞당김, 나머지는 배열 순서(최신순) 유지
         if (filterType) {

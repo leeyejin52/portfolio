@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yejin Lee — Portfolio</title>
-  <link rel="stylesheet" href="assets/css/style.css?v=20260923a">
+  <link rel="stylesheet" href="assets/css/style.css?v=20260923u">
   <link rel="icon" href="assets/favicon.svg">
 </head>
 <body>
@@ -34,16 +34,6 @@
             <a href="projects.html?type=Build">Build</a>
             <a href="projects.html?type=Research">Research</a>
             <a href="projects.html?type=Craft%20%26%20Visual">Craft & Visual</a>
-          </div>
-        </div>
-        <div class="index-group">
-          <p class="group-label">Year</p>
-          <div class="group-links">
-            <a href="projects.html?year=2026">2026</a>
-            <a href="projects.html?year=2025">2025</a>
-            <a href="projects.html?year=2024">2024</a>
-            <a href="projects.html?year=2023">2023</a>
-            <a href="projects.html?year=2022">2022</a>
           </div>
         </div>
       </div>
@@ -141,6 +131,9 @@
     <span class="dot" style="left: 14.1%; top: 27.0%; --dx: -88px; --dy: -109px; animation-duration: 8.9s; animation-delay: -8.9s;"></span>
   </div>
 
+  <!-- 소개 + 흰 화면 + 쇼케이스 묶음: 앞 화면은 제자리에 멈춰 있고, 다음 화면이 아래에서 올라와 덮는다 -->
+  <div class="hero-stack">
+
   <!-- 첫 화면: 소개 텍스트(왼쪽 아래). 그냥 스크롤로 지나가고 바로 아래에 쇼케이스가 이어진다 -->
   <header class="hero hero-home">
     <canvas class="hero-blocks" aria-hidden="true"></canvas>
@@ -149,7 +142,7 @@
     </div>
   </header>
 
-  <!-- 소개 아래 흰 띠: 한 줄 문장 -->
+  <!-- 소개 아래 흰 화면: 한 줄 문장. 멈춰 있는 소개 위로 올라와 덮고, 이번엔 자기가 멈춰 쇼케이스에 덮인다 -->
   <section class="hero-note">
     <div class="container">
       <p>A one-line statement about what I design and why it matters goes here.</p>
@@ -161,6 +154,8 @@
   <section class="showcase" id="showcase" aria-label="Projects">
     <div class="showcase-sticky"></div>
   </section>
+
+  </div>
 
   <footer class="footer">
     <div class="container">
@@ -201,7 +196,7 @@
   </footer>
 
   <script src="https://unpkg.com/lenis@1.3.4/dist/lenis.min.js"></script>
-  <script src="assets/js/main.js?v=20260923a"></script>
+  <script src="assets/js/main.js?v=20260923u"></script>
 
 </body>
 </html>
