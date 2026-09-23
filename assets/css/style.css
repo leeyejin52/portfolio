@@ -184,7 +184,10 @@ a {
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
-  font-size: var(--fs-52);     /* 메뉴 항목은 제목 크기(42pt)로 큼직하게 */
+  /* 메뉴 항목은 제목 크기(42pt)까지 큼직하게. 단, 항목 10개가 스크롤 없이 화면 안에 다 들어가도록
+     화면이 낮으면 그만큼 줄어든다(위아래 여백·라벨·간격을 뺀 높이를 10줄로 나눈 값) */
+  font-size: clamp(18pt, calc((100vh - 360px) / 11), var(--fs-52));
+  font-size: clamp(18pt, calc((100dvh - 360px) / 11), var(--fs-52));
   line-height: 1.1;
   letter-spacing: -0.01em;
 }
