@@ -491,6 +491,48 @@ function detailURL(p) {
       rows.push({ y: y, h: h, bars: bars, span: x, off: rand(0, x), v: 0 });
       y += h;
     }
+    darkenUnderTitle();
+  }
+
+  // 제목이 놓이는 자리의 막대만 어두운 색(남색·파랑·빨강, 가끔 초록)으로 바꿔 흰 글자가 뜨게 한다.
+  // 그림자나 덮개 없이 배치로 푸는 방식 — 겉으로는 그 부분이 우연히 진한 구성처럼 보인다.
+  // 색은 따로 고정 씨앗 난수로 골라 열 때마다 같고, 자리 밖의 막대는 원래 그림 그대로다.
+  var DARK = [
+    { hex: '#402EB3', w: 0.36 },
+    { hex: '#3067F6', w: 0.30 },
+    { hex: '#FA2513', w: 0.24 },
+    { hex: '#35C278', w: 0.10 }
+  ];
+  var darkTotal = DARK.reduce(function (a, p) { return a + p.w; }, 0);
+  function darkenUnderTitle() {
+    var h1 = document.querySelector('.hero-home h1');
+    if (!h1) return;
+    // 제목 상자를 캔버스 기준으로: 스크롤 중 옮겨진 transform은 무시하고 원래 자리를 쓴다
+    var box = h1.offsetParent, zx = h1.offsetLeft, zy = h1.offsetTop;
+    while (box && box !== canvas.parentNode) { zx += box.offsetLeft; zy += box.offsetTop; box = box.offsetParent; }
+    var m = 8;   // 글자 둘레 여유
+    var x0 = zx - m, y0 = zy - m, x1 = zx + h1.offsetWidth + m, y1 = zy + h1.offsetHeight + m;
+    var s2 = 7;
+    function rnd2() {
+      s2 |= 0; s2 = s2 + 0x6D2B79F5 | 0;
+      var t = Math.imul(s2 ^ s2 >>> 15, 1 | s2);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+    function pickDark() {
+      var r = rnd2() * darkTotal;
+      for (var i = 0; i < DARK.length; i++) { r -= DARK[i].w; if (r <= 0) return DARK[i].hex; }
+      return DARK[0].hex;
+    }
+    rows.forEach(function (r) {
+      if (r.y + r.h <= y0 || r.y >= y1) return;
+      r.bars.forEach(function (b) {
+        var sx = b.x - r.off;
+        if (sx + b.w < 0) sx += r.span;
+        if (sx + b.w <= x0 || sx >= x1) return;
+        b.c = pickDark();
+      });
+    });
   }
   function draw(dt) {
     ctx.clearRect(0, 0, W, H);
@@ -509,6 +551,7 @@ function detailURL(p) {
   build();
   draw(0);
   window.addEventListener('resize', function () { build(); draw(0); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { build(); draw(0); });   // 제목 서체가 늦게 오면 자리가 바뀌므로 다시
 })();
 
 // 홈 겹침 전환: 1(소개)·2(흰 화면)는 바탕이 제자리에 멈추고 다음 화면이 올라와 덮는다.
