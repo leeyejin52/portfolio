@@ -639,11 +639,17 @@ function renderShowcase(section, projects) {
   // 치수를 바꾸면 브라우저가 큰 그림을 매 프레임 다시 그려 덜컥거리지만, 배율은 GPU가 그대로 확대·축소만 한다.
   // 프레임·타일은 가장 클 때 크기(S0·W1)로 만들어 두고 줄인다.
   var vw, stageH, navH, pad, S0, W1, H1, W2, H2, G1, G2, F, A, B, C, HOLD, overflow, natW = 3200, natH = 1800;
+  // 화면 높이는 폰 주소창이 접힌 상태(가장 큰 높이)로 잰다. innerHeight는 주소창이 보일 때 더 작게 나와
+  // 그 값으로 만들면 주소창이 접히는 순간 아래가 비어 다음 화면이 들여다보인다
+  var ruler = document.createElement('div');
+  ruler.style.cssText = 'position:fixed;top:0;left:0;width:0;height:100vh;height:100lvh;visibility:hidden;pointer-events:none';
+  document.body.appendChild(ruler);
+  var fullH = function () { return Math.max(ruler.offsetHeight, window.innerHeight); };
   var measure = function () {
     vw = sticky.clientWidth;
     navH = parseFloat(getComputedStyle(section).getPropertyValue('--nav-h')) || 0;
     pad = parseFloat(getComputedStyle(section).getPropertyValue('--pad')) || 32;
-    stageH = window.innerHeight - navH;
+    stageH = fullH() - navH;
     S0 = Math.max(vw, stageH);                    // 꽉 찼을 때 프레임(정사각형) 한 변
     W1 = clamp(vw * 0.243, 180, 400); H1 = W1;   // 축소 직후 타일 (정사각형 — 가로형 이미지는 양옆이 잘린다)
     W2 = clamp(vw * 0.175, 130, 290); H2 = W2;   // 줄에 섰을 때 타일 (정사각형)
@@ -735,7 +741,7 @@ function renderShowcase(section, projects) {
   if (!reduce) {
     (function tick(now) {
       var r = section.getBoundingClientRect();
-      var visible = r.bottom > 0 && r.top < window.innerHeight;
+      var visible = r.bottom > 0 && r.top < fullH();
       if (visible && lastPA < 1) {
         breathe = 0.05 * (0.5 - 0.5 * Math.cos(now / 14000 * Math.PI));   // 14초에 0→5%, 다음 14초에 5→0
         update();
@@ -749,10 +755,10 @@ function renderShowcase(section, projects) {
   if (frameImg && !frameImg.complete) frameImg.addEventListener('load', function () { measure(); update(); });
   // 폰에서 주소창이 접히고 펴질 때마다 높이가 조금씩 바뀌는데, 그때마다 다시 재면 화면이 툭 뛴다.
   // 폭이 바뀌거나(회전) 높이가 크게 바뀔 때만 다시 잰다
-  var lastW = window.innerWidth, lastH = window.innerHeight;
+  var lastW = window.innerWidth, lastH = fullH();
   window.addEventListener('resize', function () {
-    if (window.innerWidth === lastW && Math.abs(window.innerHeight - lastH) < 120) return;
-    lastW = window.innerWidth; lastH = window.innerHeight;
+    if (window.innerWidth === lastW && Math.abs(fullH() - lastH) < 120) return;
+    lastW = window.innerWidth; lastH = fullH();
     measure(); update();
   });
 }

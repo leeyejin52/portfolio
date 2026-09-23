@@ -1624,10 +1624,19 @@ img.detail-image {
   .hero-note p, .hero-note.is-in p { transform: none; transition: opacity 0.3s ease; }
 }
 
+.hero-note .container {
+  /* 문장이 스크롤에 따라 1.1배까지 커지므로(main.js), 커진 뒤에도 좌우 여백(32px) 안에 머물도록 5%씩 더 비워 둔다 */
+  padding: 0 calc(32px + 5vw);
+}
+
 .hero-note p {
   font-size: var(--fs-12);
   color: var(--ink);
   margin: 0;
+}
+
+@media (max-width: 720px) {
+  .hero-note .container { padding: 0 calc(18px + 5vw); }   /* 폰 여백 18px 기준 */
 }
 
 
