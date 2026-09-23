@@ -29,7 +29,7 @@
   --ink: #000000;
   --surface: #ECECEC;
   --nav-h-page: 72px;        /* 상단 내비 띠 높이(폰은 60px). 첫 화면을 이만큼 위로 끌어올려 화면 맨 위부터 채운다 */
-  --under-bar: 160px;        /* 폰 사파리 아래 주소창 뒤로 비치는 영역만큼 첫 화면·쇼케이스를 아래로 더 채운다 */
+  --under-bar: 0px;          /* 폰 사파리 아래 주소창 뒤로 비치는 영역만큼 첫 화면·쇼케이스를 아래로 더 채운다 (폰에서만 160px, PC는 0) */
   --fs-12: 12pt;
   --fs-14: 12pt;
   --fs-24: 16pt;
@@ -1237,7 +1237,7 @@ img.detail-image {
     padding: 32px 0;
   }
 
-  :root { --nav-h-page: 60px; }   /* 폰 내비 띠 높이 → 첫 화면 끌어올리는 값도 60px */
+  :root { --nav-h-page: 60px; --under-bar: 160px; }   /* 폰: 내비 띠 60px, 주소창 뒤 채우기 160px */
 
   .hero .dot,
   .hero-image .dot,
@@ -1620,11 +1620,6 @@ img.detail-image {
   .hero-note p, .hero-note.is-in p { transform: none; transition: opacity 0.3s ease; }
 }
 
-.hero-note .container {
-  /* 문장이 스크롤에 따라 1.1배까지 커지므로(main.js), 커진 뒤에도 좌우 여백(32px) 안에 머물도록 5%씩 더 비워 둔다 */
-  padding: 0 calc(32px + 5vw);
-}
-
 .hero-note p {
   font-size: var(--fs-12);
   color: var(--ink);
@@ -1632,7 +1627,8 @@ img.detail-image {
 }
 
 @media (max-width: 720px) {
-  .hero-note .container { padding: 0 calc(18px + 5vw); }   /* 폰 여백 18px 기준 */
+  /* 폰: 문장이 스크롤에 따라 1.1배까지 커지므로(main.js), 커진 뒤에도 여백(18px) 안에 머물도록 5%씩 더 비워 둔다 */
+  .hero-note .container { padding: 0 calc(18px + 5vw); }
 }
 
 
@@ -1703,8 +1699,13 @@ img.detail-image {
   height: calc(100vh - var(--nav-h));
   height: calc(100lvh - var(--nav-h));
   overflow: hidden;
-  overflow-x: clip;         /* 옆으로 들어오는 타일만 잘라내고, 위아래는 프레임이 주소창 뒤까지 넘치게 둔다 */
-  overflow-y: visible;
+}
+
+@media (max-width: 720px) {
+  .showcase-sticky {
+    overflow-x: clip;       /* 폰: 옆으로 들어오는 타일만 잘라내고, 위아래는 프레임이 주소창 뒤까지 넘치게 둔다 */
+    overflow-y: visible;
+  }
 }
 
 /* 큰 프레임(= 첫 프로젝트)과 나머지 타일: 모두 왼쪽 위 기준으로 JS가 옮긴다 */
