@@ -494,9 +494,9 @@ function detailURL(p) {
     darkenUnderTitle();
   }
 
-  // 첫 화면 전체를 원래 팔레트 색 그대로 두되 조금 어둡게(밝기 76%) 해서 흰 글자가 뜨게 한다.
+  // 첫 화면 전체를 원래 팔레트 색 그대로 두되 조금 어둡게(밝기 80%) 해서 흰 글자가 뜨게 한다.
   // (배경 점은 원래 밝기 그대로 — 여기서는 캔버스의 막대만)
-  var SHADE = 0.76;
+  var SHADE = 0.80;
   function shade(hex, f) {
     var n = parseInt(hex.slice(1), 16);
     var r = Math.round(((n >> 16) & 255) * f), g = Math.round(((n >> 8) & 255) * f), b = Math.round((n & 255) * f);
