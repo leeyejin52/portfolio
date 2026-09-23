@@ -1196,18 +1196,15 @@ img.detail-image {
 
   .nav-index { width: 100%; }  /* 폰에서는 화면 전체 */
 
-  /* 메뉴: 3컬럼 → 세로 스택, 태그는 가로로 흐르게 */
+  /* 메뉴: PC와 같이 세로로 쌓고 오른쪽 정렬. 패널이 화면 전체라 폭 기준만 100vw로 바꾼다 */
   .nav-index > .container {
     gap: 32px;
     padding: 88px 18px 40px;   /* 위는 내비 띠(60px) 아래부터 */
   }
 
   .group-links {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 6px 10px;
-    font-size: calc(var(--fs-52) * 0.6);   /* 폰에서는 25pt 정도 */
+    font-size: clamp(16pt, min(calc((100vh - 300px) / 11), calc((100vw - 42px) / 9.6)), var(--fs-52));
+    font-size: clamp(16pt, min(calc((100dvh - 300px) / 11), calc((100vw - 42px) / 9.6)), var(--fs-52));
   }
 
   .group-links a {
