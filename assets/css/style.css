@@ -1577,6 +1577,7 @@ img.detail-image {
 
 .hero-stack {
   position: relative;
+  overflow: clip;           /* 주소창 뒤까지 늘린 첫 화면 블록이 묶음이 끝난 뒤(푸터 위)로 삐져나오지 않게. clip은 sticky를 깨지 않는다 */
 }
 
 .hero-stack .hero-home {
