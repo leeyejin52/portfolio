@@ -168,10 +168,40 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
   document.body.appendChild(cursorDot);
   document.documentElement.classList.add('custom-cursor');
 
-  // 커서 색: 햄버거처럼, 어두운 바탕(색 블록 첫 화면·쇼케이스 이미지) 위에서는 흰 원, 그 밖에서는 검은 원.
-  // 포인터 자리에 실제로 무엇이 보이는지(위에서부터) 찾아 판정한다. 투명한 내비 띠는 건너뛰고 그 아래를 본다.
-  var DARK = '.hero-home, .showcase-frame, .showcase-tile';
+  // 커서 색: 포인터 자리에 실제로 보이는 바탕이 어두우면 흰 원, 밝으면 검은 원 — 모든 페이지 공통.
+  // 포인터 아래 요소를 위에서부터 훑어, 처음 만나는 '불투명한 바탕'(배경색·이미지·캔버스)의 밝기로 정한다.
+  // 이미지는 축소해 평균 밝기를 한 번만 재고 기억해 둔다. 캔버스(홈 색 블록)는 어두운 것으로 본다.
   var px = -1, py = -1, tintQueued = false;
+  var imgLum = new WeakMap();
+  var probe = document.createElement('canvas'); probe.width = probe.height = 8;
+  var probeCtx = probe.getContext('2d', { willReadFrequently: true });
+  function lumOf(r, g, b) { return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255; }
+  function imageLum(img) {
+    if (imgLum.has(img)) return imgLum.get(img);
+    if (!img.complete || !img.naturalWidth) return null;
+    var v = null;
+    try {
+      probeCtx.drawImage(img, 0, 0, 8, 8);
+      var d = probeCtx.getImageData(0, 0, 8, 8).data, sum = 0, n = 0;
+      for (var i = 0; i < d.length; i += 4) { if (d[i + 3] > 40) { sum += lumOf(d[i], d[i + 1], d[i + 2]); n++; } }
+      v = n ? sum / n : null;
+    } catch (e) { v = null; }
+    imgLum.set(img, v);
+    return v;
+  }
+  function bgDarkOf(el) {   // true=어둡다, false=밝다, null=투명(아래를 더 본다)
+    var tag = el.tagName;
+    if (tag === 'CANVAS') return true;
+    if (tag === 'IMG') { var l = imageLum(el); return l == null ? null : l < 0.5; }
+    if (tag === 'VIDEO') return true;
+    var cs = getComputedStyle(el);
+    if (cs.backgroundImage && cs.backgroundImage !== 'none') return true;   // 질감·그림 배경은 어두운 쪽으로
+    var m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(cs.backgroundColor);
+    if (!m) return null;
+    var a = m[4] == null ? 1 : parseFloat(m[4]);
+    if (a < 0.5) return null;
+    return lumOf(+m[1], +m[2], +m[3]) < 0.5;
+  }
   function tint() {
     tintQueued = false;
     if (px < 0) return;
@@ -180,9 +210,9 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
     for (var i = 0; i < stack.length; i++) {
       var el = stack[i];
       if (el === cursorDot) continue;
-      if (el.closest('.nav-index.open')) break;                                   // 열린 메뉴(흰 패널) 위
-      if (el.closest('.nav-clear') && !el.closest('.nav-index')) continue;        // 투명한 내비 띠: 그 아래가 보인다
-      dark = !!el.closest(DARK);
+      var d = bgDarkOf(el);
+      if (d === null) continue;
+      dark = d;
       break;
     }
     cursorDot.classList.toggle('on-dark', dark);
