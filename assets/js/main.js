@@ -600,8 +600,6 @@ function renderShowcase(section, projects) {
       frame.style.backgroundSize = (400 * 0.62 * imgH / natH).toFixed(2) + 'px';
     }
     frame.classList.toggle('is-full', pA === 0);
-    // 줄로 다 모인 뒤에만 마우스 올림 효과를 켠다(줄어드는 중에는 끔)
-    section.classList.toggle('is-row', pB >= 1);
     place(frame, x + drift, y, w, h);
 
     // 큰 프레임이 햄버거 아이콘 자리를 덮거나, 색 블록이 깔린 첫 화면 위에 있으면 아이콘을 흰색으로

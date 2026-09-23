@@ -1685,22 +1685,6 @@ img.detail-image {
   max-width: none;
 }
 
-/* 타일에 마우스를 올리면 타일 전체가 살짝 커진다 (squarespace와 같은 0.6s 곡선).
-   타일의 위치는 스크롤마다 스크립트가 옮기므로 타일 자체 대신 그 안을 꽉 채운 이미지 상자를 키우고, 넘치는 부분을 자르지 않아 타일이 커진 것처럼 보인다 */
-.showcase-tile,
-.showcase-frame { overflow: visible; }
-
-.showcase .thumb {
-  transition: transform 0.6s cubic-bezier(0.215, 0.61, 0.355, 1);
-}
-
-/* 줄로 다 모인 뒤(main.js가 .is-row를 붙인다)에만 켠다 — 줄어드는 중에는 커지지 않는다 */
-@media (hover: hover) {
-  .showcase.is-row .showcase-tile:hover .thumb,
-  .showcase.is-row .showcase-frame:hover .showcase-clip { transform: scale(1.06); }
-  .showcase.is-row .showcase-tile:hover { z-index: 3; }   /* 커진 타일이 옆 타일 위로 */
-}
-
 /* 꽉 찬 상태에서는 그림이 아주 천천히 숨 쉬듯 커졌다 작아진다(살아 있는 느낌). 줄어들기 시작하면 멈춘다 */
 
 .showcase .showcase-frame.is-full .thumb {
