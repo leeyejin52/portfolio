@@ -103,6 +103,12 @@ var HERO_PALETTE = [
 
   function rand(a, b) { return a + Math.random() * (b - a); }
   function bell() { return ((Math.random() + Math.random() + Math.random()) / 3) * 2 - 1; }
+  var palTotal = HERO_PALETTE.reduce(function (a, p) { return a + p.w; }, 0);
+  function pickEnterColor() {
+    var r = Math.random() * palTotal;
+    for (var i = 0; i < HERO_PALETTE.length; i++) { r -= HERO_PALETTE[i].w; if (r <= 0) return HERO_PALETTE[i].hex; }
+    return HERO_PALETTE[HERO_PALETTE.length - 1].hex;
+  }
 
   var layer = document.createElement('div');
   layer.className = 'enter-dots';
@@ -119,6 +125,7 @@ var HERO_PALETTE = [
     g.className = 'g';
     var d = document.createElement('span');
     d.className = 'd';
+    d.style.background = pickEnterColor();   // 홈 배경 점과 같은 팔레트·비율
     g.appendChild(d);
 
     // 뭉치는 자리와 성긴 자리를 만들어 밀도 대비를 준다
@@ -1010,7 +1017,6 @@ if (homeGrid || showcase || listGrid || detailRoot) {
         set('.d-role', p.role);
         set('.d-team', p.team);
         set('.d-tools', p.tools);
-        set('.d-graphnote', p.graphNote || '');
 
         // 4. 기능 소개
         renderFeatures(detailRoot.querySelector('#feat-root'), p.features);

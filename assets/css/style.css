@@ -345,10 +345,10 @@ a {
 
 .enter-dots .d {
   display: block;
-  width: 30px;
-  height: 30px;
+  width: 20px;                  /* 홈 배경 점과 같은 크기. 색도 같은 팔레트로 main.js가 넣는다 */
+  height: 20px;
   border-radius: 50%;
-  background: var(--surface);
+  background: var(--surface);   /* JS가 색을 넣기 전 대비용 */
   will-change: transform, opacity;
 }
 
@@ -1245,9 +1245,9 @@ img.detail-image {
 
   .hero .dot,
   .hero-image .dot,
-  .enter-dots .d {
-    width: 20px;
-    height: 20px;
+  .enter-dots .d {          /* 폰: 홈 배경 점과 같이 14px */
+    width: 14px;
+    height: 14px;
   }
 
   .hero-image .dot {          /* 홈 배경 점: 데스크톱(20px)의 2/3 */
