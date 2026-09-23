@@ -1577,7 +1577,6 @@ img.detail-image {
 
 .hero-stack {
   position: relative;
-  overflow: clip;           /* 주소창 뒤까지 늘린 첫 화면 블록이 묶음이 끝난 뒤(푸터 위)로 삐져나오지 않게. clip은 sticky를 깨지 않는다 */
 }
 
 .hero-stack .hero-home {
@@ -1595,7 +1594,6 @@ img.detail-image {
   position: sticky;
   top: 0;
   z-index: 1;               /* 멈춰 있는 소개 위로 올라온다 */
-  margin-top: var(--under-bar);   /* 첫 화면이 주소창 뒤까지 채운 만큼 뒤에서 시작(그 사이는 화면 밖이라 보이지 않는다) */
   height: 100vh;
   height: 100lvh;           /* 폰: 주소창이 접힌 큰 화면 높이 — 어느 상태에서든 아래가 비지 않는다 */
   display: flex;
@@ -1656,25 +1654,25 @@ img.detail-image {
    아래 여백은 왼쪽 여백(컨테이너 32px, 모바일 18px)과 같게 */
 .hero-home {
   justify-content: flex-end;
-  padding-bottom: 32px;
+  padding-bottom: calc(32px + var(--under-bar));   /* 32px 여백 + 주소창 뒤 몫: 글은 화면 아래 32px 자리에 그대로 */
 }
 
 .hero-home {
   position: relative;
-  overflow: visible;     /* 색 블록이 화면 아래(폰 주소창 뒤)까지 이어지도록 잘라내지 않는다 */
+  overflow: hidden;
   margin-top: calc(-1 * var(--nav-h-page));   /* 투명한 내비 뒤까지 블록이 채우도록 화면 맨 위부터 시작 (폰은 60px) */
   padding-top: var(--nav-h-page);
-  min-height: 100vh;
-  min-height: 100lvh;    /* 폰: 주소창이 접힌 큰 화면 높이. 주소창이 보일 때는 그 밑까지 넘치게 채운다 */
+  /* 높이는 큰 화면 높이 + 폰 사파리 주소창 뒤로 비치는 몫. 글은 아래 여백(padding-bottom)으로 그만큼 올려 화면 안 원래 자리에 둔다 */
+  min-height: calc(100vh + var(--under-bar));
+  min-height: calc(100lvh + var(--under-bar));
 }
 
 /* 첫 화면 바탕: 참고 영상의 색 조합·비율로 채운 색 막대 블록(main.js가 그린다). 글 뒤에 깔린다 */
 .hero-blocks {
   position: absolute;
   inset: 0;
-  bottom: calc(-1 * var(--under-bar));   /* 폰 사파리는 아래 주소창 뒤로 다음 내용이 비쳐 보인다. 그 자리까지 블록으로 채운다 */
   width: 100%;
-  height: calc(100% + var(--under-bar));
+  height: 100%;
   display: block;
 }
 
