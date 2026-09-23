@@ -193,8 +193,15 @@ a {
 }
 
 .group-links a {
-  background: var(--surface);
   padding: 0 6px;
+  border-radius: 2px;
+  transition: background-color 0.15s ease;
+}
+
+/* 회색 바탕은 마우스를 올리거나 키보드로 고른 항목에만 — 평소에는 글자만 남긴다 */
+.group-links a:hover,
+.group-links a:focus-visible {
+  background: var(--surface);
 }
 
 /* ---------- 커서: 사이트 전체를 노란 원으로 ----------
