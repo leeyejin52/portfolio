@@ -471,8 +471,8 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// thumbFit: "contain"이면 어느 화면에서든 이미지를 잘라내지 않고 원래 비율대로 상자 안에 넣는다(남는 자리는 회색)
-function fitClass(p) { return p.thumbFit === 'contain' ? ' fit-contain' : ''; }
+// thumbFit: "contain"이면 어느 화면에서든 잘라내지 않고 원래 비율대로, "square"면 상세 상단에서 가운데 정사각형으로 잘라 보여준다
+function fitClass(p) { return p.thumbFit === 'contain' ? ' fit-contain' : p.thumbFit === 'square' ? ' fit-square' : ''; }
 function thumbHTML(p) {
   if (p.thumbnail) {
     return '<img class="thumb' + fitClass(p) + '" src="' + esc(ROOT + p.thumbnail) + '" alt="' + esc(p.title) + '">';

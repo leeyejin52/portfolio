@@ -1796,3 +1796,12 @@ img.detail-image {
   object-fit: contain;
   background: none;
 }
+
+/* 상세 상단, thumbFit이 "square"인 프로젝트: 같은 높이의 정사각형으로 가운데를 잘라 보여준다(가로형 원본의 가운데 그림만) */
+.detail-hero-thumb.fit-square {
+  width: auto;
+  aspect-ratio: 1 / 1;
+  max-width: 100%;
+  margin: 0 auto;
+  object-fit: cover;
+}

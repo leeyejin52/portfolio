@@ -50,10 +50,10 @@ content:
             label: 썸네일 이미지
             type: image
           - name: thumbFit
-            label: 썸네일 맞춤 (비워 두면 꽉 채워 잘라냄, contain이면 원래 비율 유지)
+            label: 썸네일 맞춤 (비워 두면 꽉 채워 잘라냄, contain은 원래 비율 유지, square는 상세 상단에서 정사각형)
             type: select
             options:
-              values: [contain]
+              values: [contain, square]
           - name: summary
             label: 요약 (상세 상단)
             type: text
