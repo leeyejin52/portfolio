@@ -1779,9 +1779,20 @@ img.detail-image {
 }
 
 /* ---------- 비율 유지 썸네일: 데이터의 thumbFit이 "contain"인 프로젝트 ----------
-   목록·상세·홈 쇼케이스 어디서든 잘라내지 않고 원래 비율대로 상자 안에 넣는다. 남는 자리는 상자의 회색 바탕 */
-.thumb.fit-contain,
-.detail-hero-thumb.fit-contain,
-.showcase .thumb.fit-contain {
+   회색 여백 없이: 가로는 다른 것과 같게 두고 세로가 이미지 비율대로 늘어난다.
+   목록 카드 → 상자 높이를 이미지가 정한다. 홈 쇼케이스 타일 → main.js가 타일 세로를 비율대로 잡고 줄 가운데에 맞춘다 */
+.project-card .thumb.fit-contain,
+.project-grid.single-column .project-card .thumb.fit-contain {
+  aspect-ratio: auto;
+  height: auto;
+  background: none;
+}
+
+/* 상세 상단: 높이는 그대로 두고 그 높이에 맞는 비율대로 가운데에 — 양옆 회색 없이 */
+.detail-hero-thumb.fit-contain {
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
   object-fit: contain;
+  background: none;
 }

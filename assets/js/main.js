@@ -677,7 +677,15 @@ function renderShowcase(section, projects) {
     }
     // 이미지 밖 파란 자리의 질감: 질감 조각(400px, 2400px 그림 기준)을 이미지 기준 배율에 맞춘다. 배율은 이미지와 함께 바뀐다
     if (grain) grain.style.backgroundSize = (400 * 0.62 * S0 / natH).toFixed(2) + 'px';
-    tiles.forEach(function (t) { t.style.width = t.style.height = W1 + 'px'; });
+    // 타일: 가로는 모두 같고(W1), 원래 비율을 유지하는 프로젝트(thumbFit: contain)만 세로가 이미지 비율대로 늘어난다.
+    // 나머지는 정사각형. 세로가 달라도 줄에서는 가운데 정렬(update에서 cy 기준)
+    tiles.forEach(function (t, k) {
+      var pj = projects[k + 1], img = t.querySelector('img');
+      t.ratio = 1;
+      if (pj && pj.thumbFit === 'contain' && img && img.naturalWidth) t.ratio = img.naturalHeight / img.naturalWidth;
+      t.style.width = W1 + 'px';
+      t.style.height = (W1 * t.ratio).toFixed(1) + 'px';
+    });
   };
 
   // 요소를 (x, y)에 화면 크기 w로 놓는다 — 기준 크기 base에서 w/base 배율
@@ -731,11 +739,12 @@ function renderShowcase(section, projects) {
       navicon.classList.toggle('on-dark', covers || onHero);
     }
     // 나머지 타일: 화면 오른쪽 바깥에서 기다리다(축소 중에는 보이지 않음) 줄로 모일 때 들어온다
-    var tw = lerp(W1, W2, eB), th = lerp(H1, H2, eB);
+    var tw = lerp(W1, W2, eB);
     tiles.forEach(function (t, k) {
       var i = k + 1;
       var x0 = vw + G1 + k * (W1 + G1);
       var x1 = pad + i * (W2 + G2);
+      var th = tw * (t.ratio || 1);                       // 세로는 타일마다 다를 수 있다 → 줄 가운데에 맞춘다
       place(t, lerp(x0, x1, eB) + drift, cy - th / 2, tw, W1);
     });
   };
@@ -756,6 +765,11 @@ function renderShowcase(section, projects) {
   measure();
   onScrollFrame(update);
   if (frameImg && !frameImg.complete) frameImg.addEventListener('load', function () { measure(); update(); });
+  // 비율 유지 타일은 이미지가 도착해야 세로를 알 수 있으므로, 늦게 오면 다시 잰다
+  tiles.forEach(function (t) {
+    var img = t.querySelector('img');
+    if (img && !img.complete) img.addEventListener('load', function () { measure(); update(); });
+  });
   // 폰에서 주소창이 접히고 펴질 때마다 높이가 조금씩 바뀌는데, 그때마다 다시 재면 화면이 툭 뛴다.
   // 폭이 바뀌거나(회전) 높이가 크게 바뀔 때만 다시 잰다
   var lastW = window.innerWidth, lastH = fullH();
