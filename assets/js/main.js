@@ -494,36 +494,16 @@ function detailURL(p) {
     darkenUnderTitle();
   }
 
-  // 제목이 놓이는 자리의 막대는 원래 색 그대로 두되 조금 어둡게(밝기 68%) 해서 흰 글자가 뜨게 한다.
-  // 팔레트 톤은 유지되고, 자리 가장자리는 48px에 걸쳐 서서히 밝아져 경계가 보이지 않는다.
-  var SHADE = 0.68, FEATHER = 48;
+  // 첫 화면 전체를 원래 팔레트 색 그대로 두되 조금 어둡게(밝기 76%) 해서 흰 글자가 뜨게 한다.
+  // (배경 점은 원래 밝기 그대로 — 여기서는 캔버스의 막대만)
+  var SHADE = 0.76;
   function shade(hex, f) {
     var n = parseInt(hex.slice(1), 16);
     var r = Math.round(((n >> 16) & 255) * f), g = Math.round(((n >> 8) & 255) * f), b = Math.round((n & 255) * f);
     return 'rgb(' + r + ',' + g + ',' + b + ')';
   }
   function darkenUnderTitle() {
-    var h1 = document.querySelector('.hero-home h1');
-    if (!h1) return;
-    // 제목 상자를 캔버스 기준으로: 스크롤 중 옮겨진 transform은 무시하고 원래 자리를 쓴다
-    var box = h1.offsetParent, zx = h1.offsetLeft, zy = h1.offsetTop;
-    while (box && box !== canvas.parentNode) { zx += box.offsetLeft; zy += box.offsetTop; box = box.offsetParent; }
-    var x0 = zx, y0 = zy, x1 = zx + h1.offsetWidth, y1 = zy + h1.offsetHeight;
-    rows.forEach(function (r) {
-      var cy = r.y + r.h / 2;
-      var dy = Math.max(y0 - cy, cy - y1, 0);
-      if (dy >= FEATHER) return;
-      r.bars.forEach(function (b) {
-        var sx = b.x - r.off;
-        if (sx + b.w < 0) sx += r.span;
-        var cx = sx + b.w / 2;
-        var dx = Math.max(x0 - cx, cx - x1, 0);
-        var d = Math.sqrt(dx * dx + dy * dy);       // 제목 상자까지의 거리(안쪽이면 0)
-        if (d >= FEATHER) return;
-        var t = 1 - d / FEATHER; t = t * t * (3 - 2 * t);
-        b.c = shade(b.c, 1 - (1 - SHADE) * t);
-      });
-    });
+    rows.forEach(function (r) { r.bars.forEach(function (b) { b.c = shade(b.c, SHADE); }); });
   }
   function draw(dt) {
     ctx.clearRect(0, 0, W, H);
@@ -542,7 +522,6 @@ function detailURL(p) {
   build();
   draw(0);
   window.addEventListener('resize', function () { build(); draw(0); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { build(); draw(0); });   // 제목 서체가 늦게 오면 자리가 바뀌므로 다시
 })();
 
 // 홈 겹침 전환: 1(소개)·2(흰 화면)는 바탕이 제자리에 멈추고 다음 화면이 올라와 덮는다.
