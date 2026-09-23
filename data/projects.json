@@ -39,7 +39,9 @@
       "graphNote": "시각화에 대한 설명 한 문단이 들어갈 자리입니다.",
       "role": "역할이 들어갈 자리",
       "team": "함께한 사람이 들어갈 자리",
-      "tools": "사용한 도구가 들어갈 자리"
+      "tools": "사용한 도구가 들어갈 자리",
+      "thumbnail": "assets/img/familiar-shapes-thumb.jpg",
+      "thumbFit": "contain"
     },
     {
       "id": 3,

@@ -471,9 +471,11 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// thumbFit: "contain"이면 어느 화면에서든 이미지를 잘라내지 않고 원래 비율대로 상자 안에 넣는다(남는 자리는 회색)
+function fitClass(p) { return p.thumbFit === 'contain' ? ' fit-contain' : ''; }
 function thumbHTML(p) {
   if (p.thumbnail) {
-    return '<img class="thumb" src="' + esc(ROOT + p.thumbnail) + '" alt="' + esc(p.title) + '">';
+    return '<img class="thumb' + fitClass(p) + '" src="' + esc(ROOT + p.thumbnail) + '" alt="' + esc(p.title) + '">';
   }
   return '<div class="thumb"></div>';
 }
@@ -1042,7 +1044,7 @@ if (homeGrid || showcase || listGrid || detailRoot) {
         // 1. 대형 썸네일
         var hero = detailRoot.querySelector('.detail-hero-thumb');
         if (p.thumbnail) {
-          hero.outerHTML = '<img class="detail-hero-thumb" src="' + esc(ROOT + p.thumbnail) + '" alt="' + esc(p.title) + '">';
+          hero.outerHTML = '<img class="detail-hero-thumb' + fitClass(p) + '" src="' + esc(ROOT + p.thumbnail) + '" alt="' + esc(p.title) + '">';
         }
 
         // 2. 프로젝트 정보 (본문 크기 나열)

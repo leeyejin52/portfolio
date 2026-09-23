@@ -1777,3 +1777,11 @@ img.detail-image {
   }
 
 }
+
+/* ---------- 비율 유지 썸네일: 데이터의 thumbFit이 "contain"인 프로젝트 ----------
+   목록·상세·홈 쇼케이스 어디서든 잘라내지 않고 원래 비율대로 상자 안에 넣는다. 남는 자리는 상자의 회색 바탕 */
+.thumb.fit-contain,
+.detail-hero-thumb.fit-contain,
+.showcase .thumb.fit-contain {
+  object-fit: contain;
+}
