@@ -1666,6 +1666,11 @@ img.detail-image {
   margin-top: 0;
 }
 
+/* 폰에서는 가장 긴 낱말(intersection)이 한 줄에 들어가는 크기까지만 (위 규칙보다 뒤에 있어야 이긴다) */
+@media (max-width: 720px) {
+  .hero-home h1 { font-size: min(calc(var(--fs-52) * 2), 14vw); }
+}
+
 .showcase-sticky {
   position: sticky;
   top: var(--nav-h);
