@@ -1682,13 +1682,27 @@ img.detail-image {
   display: block;
   overflow: hidden;
   background: var(--surface);
-  will-change: transform, width, height;
+  transform-origin: 0 0;        /* main.js가 왼쪽 위 기준으로 옮기고 배율로 줄인다(실제 치수는 가장 클 때로 고정) */
+  will-change: transform;
 }
 
 .showcase-frame {
   z-index: 2;
-  /* 이미지가 프레임보다 작을 때 드러나는 자리: 같은 파랑 + 원본에서 잘라 낸 질감 (크기는 main.js가 배율에 맞춰 넣는다) */
-  background: #0A1DB9 url(../img/showcase-blue-grain.webp) repeat center;
+  background: #0A1DB9;          /* 이미지가 프레임보다 작을 때 드러나는 파랑. 질감은 .showcase-grain이 이미지와 같은 배율로 얹는다 */
+}
+
+/* 파란 자리의 질감: 원본에서 잘라 낸 조각을 깔아 두고 이미지와 같은 배율로 줄인다(프레임보다 넉넉히 크게 만들어 줄어도 빈틈이 없다) */
+.showcase-grain {
+  position: absolute;
+  left: -100%;
+  top: -100%;
+  width: 300%;
+  height: 300%;
+  display: block;
+  background: url(../img/showcase-blue-grain.webp) repeat center;
+  transform-origin: center;
+  will-change: transform;
+  pointer-events: none;
 }
 
 /* 프레임 안에서 이미지를 잘라 주는 상자. 호버 때는 이 상자가 커져 타일이 커진 것처럼 보인다 */
@@ -1705,21 +1719,8 @@ img.detail-image {
   width: auto;
   height: auto;
   max-width: none;
-}
-
-/* 꽉 찬 상태에서는 그림이 아주 천천히 숨 쉬듯 커졌다 작아진다(살아 있는 느낌). 줄어들기 시작하면 멈춘다 */
-
-.showcase .showcase-frame.is-full .thumb {
-  animation: showcase-breathe 14s ease-in-out infinite alternate;
-}
-
-@keyframes showcase-breathe {
-  from { transform: scale(1); }
-  to { transform: scale(1.05); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .showcase .showcase-frame.is-full .thumb { animation: none; }
+  transform-origin: center;     /* 크기·숨쉬기 모두 main.js가 배율로 넣는다 */
+  will-change: transform;
 }
 .showcase-tile { z-index: 1; }
 

@@ -12,6 +12,26 @@ if (window.Lenis) {
   });
 }
 
+// 스크롤에 묶인 그리기(홈 겹침 전환·쇼케이스)를 한 곳에서 돌린다.
+// Lenis가 스크롤 값을 옮기는 바로 그 프레임 안에서 실행해 화면과 한 프레임도 어긋나지 않게 하고,
+// 네이티브 스크롤(폰)에서는 다음 프레임에 한 번만 실행한다. 같은 스크롤 값이면 두 번 그리지 않는다.
+var scrollFns = [], scrollQueued = false, scrollLastY = null;
+function runScrollFns(force) {
+  var y = window.pageYOffset;
+  if (!force && y === scrollLastY) return;
+  scrollLastY = y;
+  for (var i = 0; i < scrollFns.length; i++) scrollFns[i]();
+}
+function queueScrollFns(force) {
+  if (scrollQueued) return;
+  scrollQueued = true;
+  requestAnimationFrame(function () { scrollQueued = false; runScrollFns(force); });
+}
+function onScrollFrame(fn) { scrollFns.push(fn); fn(); }
+if (lenis) lenis.on('scroll', function () { runScrollFns(false); });
+window.addEventListener('scroll', function () { queueScrollFns(false); }, { passive: true });
+window.addEventListener('resize', function () { queueScrollFns(true); });
+
 // 홈 첫 화면 색 블록의 색 조합과 비율(w). 배경 점도 같은 색을 쓴다
 var HERO_PALETTE = [
   { hex: '#F1B6D3', w: 0.046 },
@@ -503,9 +523,7 @@ function detailURL(p) {
   var showcase = document.querySelector('.hero-stack .showcase');
   var dotLayer = showcase && document.querySelector('.hero-image');
   if (dotLayer) dotLayer.style.zIndex = 2;
-  var ticking = false;
   function update() {
-    ticking = false;
     var vh = window.innerHeight;
     pairs.forEach(function (p) {
       var top = p.next.getBoundingClientRect().top;
@@ -523,15 +541,14 @@ function detailURL(p) {
     // (쇼케이스 바탕은 비어 있어 그 뒤의 흰 화면 위로 점이 떠다닌다. 1·2 화면에는 나오지 않는다)
     if (dotLayer && showcase) {
       var ct = Math.max(0, Math.min(vh, showcase.getBoundingClientRect().top));
-      dotLayer.style.clipPath = ct >= vh ? 'inset(100% 0 0 0)' : 'inset(' + ct.toFixed(1) + 'px 0 0 0)';
+      var clip = ct >= vh ? 'inset(100% 0 0 0)' : 'inset(' + ct.toFixed(1) + 'px 0 0 0)';
+      if (clip !== lastClip) { lastClip = clip; dotLayer.style.clipPath = clip; }   // 값이 같으면 다시 칠하지 않는다
     }
     // 2의 문장: 흰 화면이 화면 맨 위에 닿는 순간 떠오르며 나타난다(시간으로 재생). 다시 내려가면 숨는다.
     if (note) note.classList.toggle('is-in', note.getBoundingClientRect().top <= 1);
   }
-  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-  update();
+  var lastClip = '';
+  onScrollFrame(update);
 })();
 
 // 홈 쇼케이스 — brand.squarespace.com/campaign 의 인트로를 따른다.
@@ -548,7 +565,7 @@ function renderShowcase(section, projects) {
   var GAP_RATIO = 0.31;          // 타일 사이 간격 = 타일 너비의 31% (어느 단계에서든 유지)
 
   sticky.innerHTML =
-    '<a class="showcase-frame" data-i="0" href="' + detailURL(projects[0]) + '"><span class="showcase-clip">' + thumbHTML(projects[0]) + '</span></a>' +
+    '<a class="showcase-frame" data-i="0" href="' + detailURL(projects[0]) + '"><span class="showcase-grain"></span><span class="showcase-clip">' + thumbHTML(projects[0]) + '</span></a>' +
     projects.slice(1).map(function (p, k) {
       return '<a class="showcase-tile" data-i="' + (k + 1) + '" href="' + detailURL(p) + '">' + thumbHTML(p) + '</a>';
     }).join('');
@@ -560,6 +577,7 @@ function renderShowcase(section, projects) {
   var heroNote = document.querySelector('.hero-note');
   var frameImg = frame.querySelector('img');
   var frameClip = frame.querySelector('.showcase-clip');
+  var grain = frame.querySelector('.showcase-grain');
   if (frameClip) { frameClip.style.cssText = 'position:absolute;inset:0;display:block;overflow:hidden'; }
   var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
   var lerp = function (a, b, t) { return a + (b - a) * t; };
@@ -567,12 +585,16 @@ function renderShowcase(section, projects) {
   var easeShrink = function (t) { var a = t * t * t, b = (1 - t) * (1 - t) * (1 - t); return a / (a + b); };
   var easeRow = function (t) { return t * t * (3 - 2 * t); };
 
-  var vw, stageH, navH, pad, W1, H1, W2, H2, G1, G2, F, A, B, C, HOLD, overflow;
+  // 크기는 실제 치수(width/height)를 바꾸지 않고 transform 배율로만 바꾼다.
+  // 치수를 바꾸면 브라우저가 큰 그림을 매 프레임 다시 그려 덜컥거리지만, 배율은 GPU가 그대로 확대·축소만 한다.
+  // 프레임·타일은 가장 클 때 크기(S0·W1)로 만들어 두고 줄인다.
+  var vw, stageH, navH, pad, S0, W1, H1, W2, H2, G1, G2, F, A, B, C, HOLD, overflow, natW = 3200, natH = 1800;
   var measure = function () {
     vw = sticky.clientWidth;
     navH = parseFloat(getComputedStyle(section).getPropertyValue('--nav-h')) || 0;
     pad = parseFloat(getComputedStyle(section).getPropertyValue('--pad')) || 32;
     stageH = window.innerHeight - navH;
+    S0 = Math.max(vw, stageH);                    // 꽉 찼을 때 프레임(정사각형) 한 변
     W1 = clamp(vw * 0.243, 180, 400); H1 = W1;   // 축소 직후 타일 (정사각형 — 가로형 이미지는 양옆이 잘린다)
     W2 = clamp(vw * 0.175, 130, 290); H2 = W2;   // 줄에 섰을 때 타일 (정사각형)
     G1 = W1 * GAP_RATIO; G2 = W2 * GAP_RATIO;               // 각 단계의 타일 사이 간격
@@ -583,23 +605,40 @@ function renderShowcase(section, projects) {
     C = overflow ? Math.max(stageH, overflow * 0.8) : 0;    // 줄이 흐르는 구간
     HOLD = stageH * 0.5;                                    // 다 모인 채 잠깐 머무는 구간
     section.style.height = (stageH + (reduce ? 0 : F + A + B + C + HOLD)) + 'px';
+
+    // 기준 크기(배율 1일 때)를 한 번만 정한다
+    frame.style.width = frame.style.height = S0 + 'px';
+    if (frameImg) {
+      if (frameImg.naturalWidth) { natW = frameImg.naturalWidth; natH = frameImg.naturalHeight; }
+      var imgW0 = S0 * natW / natH;                          // 이미지 기준: 높이 = 프레임 한 변, 가운데 정렬
+      frameImg.style.width = imgW0.toFixed(1) + 'px';
+      frameImg.style.height = S0 + 'px';
+      frameImg.style.left = ((S0 - imgW0) / 2).toFixed(1) + 'px';
+      frameImg.style.top = '0px';
+    }
+    // 이미지 밖 파란 자리의 질감: 질감 조각(400px, 2400px 그림 기준)을 이미지 기준 배율에 맞춘다. 배율은 이미지와 함께 바뀐다
+    if (grain) grain.style.backgroundSize = (400 * 0.62 * S0 / natH).toFixed(2) + 'px';
+    tiles.forEach(function (t) { t.style.width = t.style.height = W1 + 'px'; });
   };
 
-  var place = function (el, x, y, w, h) {
-    el.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
-    el.style.width = w.toFixed(1) + 'px';
-    el.style.height = h.toFixed(1) + 'px';
+  // 요소를 (x, y)에 화면 크기 w로 놓는다 — 기준 크기 base에서 w/base 배율
+  var place = function (el, x, y, w, base) {
+    el.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0) scale(' + (w / base).toFixed(5) + ')';
   };
 
+  // 꽉 찬 상태의 숨쉬기(그림이 14초 주기로 5%까지 천천히 커졌다 작아진다)는 시간으로 돌리되,
+  // 줄어들기 시작하면 축소 진행도에 맞춰 서서히 0으로 — 예전처럼 어느 순간 툭 끊기며 원래 크기로 튀지 않는다
+  var breathe = 0, breatheOn = false, lastPA = 0;
   var update = function () {
     var s = clamp(navH - section.getBoundingClientRect().top, 0, F + A + B + C + HOLD) - F;
     if (reduce) s = A + B;   // 움직임을 줄인 환경: 완성된 줄만 보여준다
 
     var pA = clamp(s / A, 0, 1), eA = easeShrink(pA);
     var pB = clamp((s - A) / B, 0, 1), eB = easeRow(pB);
-    var pC = C ? clamp((s - A - B) / C, 0, 1) : 0;
-    var drift = -pC * overflow;
+    var pC = C ? clamp((s - A - B) / C, 0, 1) : 0, eC = easeRow(pC);   // 흐름도 가감속: 갑자기 출발하거나 멈추지 않는다
+    var drift = -eC * overflow;
     var cy = stageH / 2;
+    lastPA = pA;
 
     // 큰 프레임: 내내 정사각형. 꽉 찼을 때는 화면의 긴 변 크기라 파란 바탕이 화면을 다 덮고,
     // 그 안의 이미지는 정사각 그림이 화면의 짧은 변에 딱 맞도록 놓여 그림이 잘리지 않는다.
@@ -607,7 +646,7 @@ function renderShowcase(section, projects) {
     // 이미지는 줄어드는 동안 프레임을 꽉 채우는 크기(타일에서는 양옆 파란 부분만 잘림)로 수렴한다
     var w, h, x, y, imgH;
     if (pB === 0) {
-      w = h = lerp(Math.max(vw, stageH), W1, eA);
+      w = h = lerp(S0, W1, eA);
       imgH = lerp(Math.min(vw, stageH) * 0.86 / 0.9, W1, eA);   // 그림(이미지 높이의 90%)이 화면 짧은 변의 86%가 되게 — 위아래 7%씩 파란 여백
     } else {
       w = h = lerp(W1, W2, eB);
@@ -615,18 +654,11 @@ function renderShowcase(section, projects) {
     }
     x = pB === 0 ? (vw - w) / 2 : lerp((vw - W1) / 2, pad, eB);
     y = (stageH - h) / 2;
-    if (frameImg) {
-      var natW = frameImg.naturalWidth || 3200, natH = frameImg.naturalHeight || 1800;
-      var imgW = imgH * natW / natH;
-      frameImg.style.width = imgW.toFixed(1) + 'px';
-      frameImg.style.height = imgH.toFixed(1) + 'px';
-      frameImg.style.left = ((w - imgW) / 2).toFixed(1) + 'px';
-      frameImg.style.top = ((h - imgH) / 2).toFixed(1) + 'px';
-      // 이미지 밖 프레임 자리는 같은 파란 질감으로: 질감 조각(400px, 2400px 그림 기준)을 이미지 배율에 맞춘다
-      frame.style.backgroundSize = (400 * 0.62 * imgH / natH).toFixed(2) + 'px';
-    }
-    frame.classList.toggle('is-full', pA === 0);
-    place(frame, x + drift, y, w, h);
+    // 이미지·질감 배율: 프레임 배율(w/S0) 위에 얹히므로, 화면에서 imgH가 되려면 imgH / w
+    var si = imgH / w;
+    if (frameImg) frameImg.style.transform = 'scale(' + (si * (1 + breathe * (1 - eA))).toFixed(5) + ')';
+    if (grain) grain.style.transform = 'scale(' + si.toFixed(5) + ')';
+    place(frame, x + drift, y, w, S0);
 
     // 큰 프레임이 햄버거 아이콘 자리를 덮거나, 색 블록이 깔린 첫 화면 위에 있으면 아이콘을 흰색으로
     if (navicon) {
@@ -645,15 +677,34 @@ function renderShowcase(section, projects) {
       var i = k + 1;
       var x0 = vw + G1 + k * (W1 + G1);
       var x1 = pad + i * (W2 + G2);
-      place(t, lerp(x0, x1, eB) + drift, cy - th / 2, tw, th);
+      place(t, lerp(x0, x1, eB) + drift, cy - th / 2, tw, W1);
     });
   };
 
+  // 숨쉬기 시계: 프레임이 아직 덜 줄어든 동안(축소 진행도 < 1)이고 화면에 보일 때만 돈다
+  if (!reduce) {
+    (function tick(now) {
+      var r = section.getBoundingClientRect();
+      var visible = r.bottom > 0 && r.top < window.innerHeight;
+      if (visible && lastPA < 1) {
+        breathe = 0.05 * (0.5 - 0.5 * Math.cos(now / 14000 * Math.PI));   // 14초에 0→5%, 다음 14초에 5→0
+        update();
+      }
+      requestAnimationFrame(tick);
+    })(performance.now());
+  }
+
   measure();
-  update();
-  if (lenis) lenis.on('scroll', update);
-  window.addEventListener('scroll', update, { passive: true });
-  window.addEventListener('resize', function () { measure(); update(); });
+  onScrollFrame(update);
+  if (frameImg && !frameImg.complete) frameImg.addEventListener('load', function () { measure(); update(); });
+  // 폰에서 주소창이 접히고 펴질 때마다 높이가 조금씩 바뀌는데, 그때마다 다시 재면 화면이 툭 뛴다.
+  // 폭이 바뀌거나(회전) 높이가 크게 바뀔 때만 다시 잰다
+  var lastW = window.innerWidth, lastH = window.innerHeight;
+  window.addEventListener('resize', function () {
+    if (window.innerWidth === lastW && Math.abs(window.innerHeight - lastH) < 120) return;
+    lastW = window.innerWidth; lastH = window.innerHeight;
+    measure(); update();
+  });
 }
 
 // 상세 기능 소개 — 왼쪽 글, 가운데 기기 프레임, 오른쪽 점이 화면에 붙어 있고,
