@@ -772,6 +772,22 @@ img.detail-image {
   margin-bottom: 16px;
 }
 
+/* 어바웃 본문의 링크: 평소에도 얇은 밑줄로 누를 수 있다는 걸 보여주고, 마우스를 올리면 흐려진다 */
+.about-intro a,
+.about-links a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: opacity 0.2s ease;
+}
+
+.about-intro a:hover,
+.about-links a:hover,
+.about-intro a:focus-visible,
+.about-links a:focus-visible {
+  opacity: 0.5;
+}
+
 /* ---------- 경력 페이지 ---------- */
 
 .career-group {
