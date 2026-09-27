@@ -776,7 +776,7 @@ img.detail-image {
 .about-intro a,
 .about-links a {
   text-decoration: underline;
-  text-decoration-thickness: 1px;
+  text-decoration-thickness: 0.085em;   /* Google Sans 보통 굵기의 세로 획 두께(측정값)와 같게 — 글자 크기를 따라간다 */
   text-underline-offset: 0.2em;
   transition: opacity 0.2s ease;
 }
