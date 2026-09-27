@@ -772,12 +772,9 @@ img.detail-image {
   margin-bottom: 16px;
 }
 
-/* 어바웃 본문의 링크: 평소에도 얇은 밑줄로 누를 수 있다는 걸 보여주고, 마우스를 올리면 흐려진다 */
+/* 어바웃 본문의 링크: 밑줄 없이, 마우스를 올리면 흐려져 누를 수 있다는 걸 알린다 */
 .about-intro a,
 .about-links a {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;       /* 픽셀에 딱 맞는 두께라 번지지 않고 선명하다(획과 같은 무게로 보인다) */
-  text-underline-offset: 0.32em;        /* j·g·p·y 꼬리보다 아래로 내려 밑줄이 끊기지 않게 */
   transition: opacity 0.2s ease;
 }
 
