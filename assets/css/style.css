@@ -776,8 +776,8 @@ img.detail-image {
 .about-intro a,
 .about-links a {
   text-decoration: underline;
-  text-decoration-thickness: 0.085em;   /* Google Sans 보통 굵기의 세로 획 두께(측정값)와 같게 — 글자 크기를 따라간다 */
-  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;       /* 픽셀에 딱 맞는 두께라 번지지 않고 선명하다(획과 같은 무게로 보인다) */
+  text-underline-offset: 0.32em;        /* j·g·p·y 꼬리보다 아래로 내려 밑줄이 끊기지 않게 */
   transition: opacity 0.2s ease;
 }
 
