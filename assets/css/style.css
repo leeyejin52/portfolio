@@ -772,16 +772,46 @@ img.detail-image {
   margin-bottom: 16px;
 }
 
+/* 영문·한글 소개: 좁은 화면에선 한글이 영문 아래로 내려가고,
+   넓은 화면에선 좌우 두 단으로 놓여 같은 순서의 문단끼리 시작점을 맞춘다 */
+.about-intro .about-ko {
+  margin-top: 48px;
+  word-break: keep-all; /* 한글 단어가 줄 끝에서 쪼개지지 않게 */
+}
+
+@media (min-width: 1025px) {
+  .about-intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 48px;
+    row-gap: 16px;
+  }
+
+  /* 두 묶음을 풀어 문단 하나하나를 같은 줄(행)에 올린다 */
+  .about-intro .about-en,
+  .about-intro .about-ko {
+    display: contents;
+  }
+
+  .about-intro .about-en p { grid-column: 1; }
+  .about-intro .about-ko p { grid-column: 2; }
+
+  .about-intro p:nth-child(1) { grid-row: 1; }
+  .about-intro p:nth-child(2) { grid-row: 2; }
+  .about-intro p:nth-child(3) { grid-row: 3; }
+
+  .about-intro p:not(.statement) {
+    margin-bottom: 0;
+  }
+}
+
 /* 어바웃 본문의 링크: 밑줄 없이, 마우스를 올리면 흐려져 누를 수 있다는 걸 알린다 */
-.about-intro a,
-.about-links a {
+.about-intro a {
   transition: opacity 0.2s ease;
 }
 
 .about-intro a:hover,
-.about-links a:hover,
-.about-intro a:focus-visible,
-.about-links a:focus-visible {
+.about-intro a:focus-visible {
   opacity: 0.5;
 }
 
