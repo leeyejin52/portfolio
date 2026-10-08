@@ -892,7 +892,7 @@ if (homeGrid || showcase || listGrid || detailRoot) {
         }).join('');
       }
 
-      // 리스트: 1열 나열, 이미지만 링크. 메뉴의 유형이 곧 필터
+      // 리스트: 세로로 이어지는 목록, 이미지만 링크. 메뉴의 유형이 곧 필터
       if (listGrid) {
         var params = new URLSearchParams(location.search);
         var filterType = params.get('type');
@@ -908,140 +908,29 @@ if (homeGrid || showcase || listGrid || detailRoot) {
           }).map(function (x) { return x.p; });
         }
 
-        var section = listGrid.closest('.work-grid');
-        var stageMQ = window.matchMedia('(min-width: 1025px)');
-
-        // 태블릿 이하: 카드가 세로로 이어지는 목록
-        var renderRows = function () {
-          listGrid.className = 'project-grid single-column';
-          listGrid.innerHTML = shown.map(function (p) {
-            return '<div class="project-card">' +
-              '<a class="thumb-link" href="' + detailURL(p) + '">' + thumbHTML(p) + '</a>' +
-              '<h3>' + esc(p.title) + '</h3>' +
-              '<p class="meta">' + esc(p.category) + ' · ' + esc(p.periodLabel) + '</p>' +
-              '</div>';
-          }).join('');
-          if (section) section.classList.remove('is-stage');
-        };
-
-        // 데스크톱: 화면에 붙어 있는 무대 하나. 제목·이미지·메타 자리는 고정되고
-        // 스크롤은 몇 번째 프로젝트를 보여줄지만 정한다. 이미지는 프레임 안에서 밀려 올라오고,
-        // 제목·메타는 한 줄 창 안에서 위로 굴러 넘어가는 롤링 텍스트로 갈아끼워진다.
-        var renderStage = function () {
-          var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          var ROLL = 600;     // 텍스트 롤링 길이(ms) — CSS 애니메이션과 맞춘다
-          var PUSH = 800;     // 이미지 밀어올림 길이(ms) — CSS transition과 맞춘다
-          var STEP = 0.45;    // 한 장 넘기는 데 필요한 스크롤 = 화면 높이의 비율
-
-          listGrid.className = 'stage-track';
-          if (section) section.classList.add('is-stage');
-          listGrid.innerHTML = '<div class="stage">' +
-            '<h3 class="stage-name"></h3>' +
-            '<a class="stage-frame thumb-link" href="#"></a>' +
-            '<p class="meta stage-meta"></p>' +
+        listGrid.className = 'project-grid single-column';
+        listGrid.innerHTML = shown.map(function (p) {
+          return '<div class="project-card">' +
+            '<a class="thumb-link" href="' + detailURL(p) + '">' + thumbHTML(p) + '</a>' +
+            '<h3>' + esc(p.title) + '</h3>' +
+            '<p class="meta">' + esc(p.category) + ' · ' + esc(p.periodLabel) + '</p>' +
             '</div>';
-          var nameEl = listGrid.querySelector('.stage-name');
-          var frame = listGrid.querySelector('.stage-frame');
-          var metaEl = listGrid.querySelector('.stage-meta');
-          var current = -1;
+        }).join('');
 
-          // 롤링: 새 글줄은 아래(되돌릴 땐 위)에서 올라와 자리를 잡고, 이전 글줄은 반대로 밀려 나간다.
-          // 창(el)은 overflow hidden이라 밖으로 나간 글줄은 잘려 보인다.
-          var roll = function (el, text, dir) {
-            var line = document.createElement('span');
-            line.className = 'roll-line';
-            line.textContent = text;
-            el.querySelectorAll('.roll-out').forEach(function (o) { o.remove(); });
-            var old = el.querySelector('.roll-line');
-            if (reduce) {
-              if (old) old.remove();
-              el.appendChild(line);
-              return;
-            }
-            // 두 글줄의 줄 수가 다르면 각자 자기 높이만큼 움직이다 창 안에서 겹친다.
-            // 둘 다 큰 쪽 높이만큼 같은 거리를 움직이게 해 교차하지 않도록 한다.
-            var oldH = old ? old.offsetHeight : 0;
-            if (old) {
-              old.classList.remove('in-up', 'in-down');
-              old.classList.add('roll-out');
-            }
-            el.appendChild(line);
-            var dist = Math.max(oldH, line.offsetHeight);
-            el.style.setProperty('--roll', dist + 'px');
-            if (old) {
-              old.classList.add(dir > 0 ? 'out-up' : 'out-down');
-              setTimeout(function () { old.remove(); }, ROLL);
-            }
-            line.classList.add(dir > 0 ? 'in-up' : 'in-down');
-          };
-
-          var show = function (idx, animate) {
-            var p = shown[idx];
-            var dir = idx > current ? 1 : -1;   // 아래로 넘기면 1, 위로 되돌리면 -1
-            current = idx;
-            frame.href = detailURL(p);
-            roll(nameEl, p.title, dir);
-            roll(metaEl, p.category + ' · ' + p.periodLabel, dir);
-
-            var olds = Array.prototype.slice.call(frame.querySelectorAll('.thumb'));
-            var tmp = document.createElement('div');
-            tmp.innerHTML = thumbHTML(p);
-            var img = tmp.firstChild;
-
-            if (!animate || reduce) {
-              olds.forEach(function (o) { o.remove(); });
-              frame.appendChild(img);
-              return;
-            }
-            img.classList.add(dir > 0 ? 'from-below' : 'from-above');
-            frame.appendChild(img);
-            void img.offsetWidth;
-            img.classList.remove('from-below', 'from-above');
-            olds.forEach(function (o) {
-              o.classList.remove('from-below', 'from-above', 'to-above', 'to-below');
-              o.classList.add(dir > 0 ? 'to-above' : 'to-below');
-              setTimeout(function () { o.remove(); }, PUSH);
+        // 각 줄은 화면에 들어올 때 한 번 떠오른다(움직임 줄이기면 CSS가 바로 보여 준다)
+        var cards = listGrid.querySelectorAll('.project-card');
+        if ('IntersectionObserver' in window) {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+              if (!e.isIntersecting) return;
+              e.target.classList.add('is-in');
+              io.unobserve(e.target);
             });
-          };
-
-          var trackTop = 0;
-          var stepPx = function () { return window.innerHeight * STEP; };
-          var measure = function () {
-            // 트랙 높이 = (장 수 - 1) × 한 장 스크롤 + 무대 높이. 마지막 장까지 무대가 붙어 있게
-            listGrid.style.height = ((shown.length - 1) * stepPx() + window.innerHeight) + 'px';
-            trackTop = listGrid.getBoundingClientRect().top + window.scrollY;
-          };
-          var update = function () {
-            var rel = window.scrollY - trackTop;
-            var idx = Math.round(rel / stepPx());   // 한 장 스크롤의 절반을 넘기면 다음 장
-            idx = Math.max(0, Math.min(shown.length - 1, idx));
-            if (idx !== current) show(idx, true);   // 처음 열 때도 첫 카드가 아래에서 올라온다
-          };
-          var onResize = function () { measure(); update(); };
-
-          measure();
-          update();
-          if (lenis) lenis.on('scroll', update);
-          window.addEventListener('scroll', update, { passive: true });
-          window.addEventListener('resize', onResize);
-
-          return function () {
-            if (lenis) lenis.off('scroll', update);
-            window.removeEventListener('scroll', update);
-            window.removeEventListener('resize', onResize);
-            listGrid.style.height = '';
-          };
-        };
-
-        var stageCleanup = null;
-        var renderList = function () {
-          if (stageCleanup) { stageCleanup(); stageCleanup = null; }
-          if (stageMQ.matches && shown.length) stageCleanup = renderStage();
-          else renderRows();
-        };
-        renderList();
-        if (stageMQ.addEventListener) stageMQ.addEventListener('change', renderList);
-        else stageMQ.addListener(renderList);
+          }, { rootMargin: '0px 0px -10% 0px' });
+          cards.forEach(function (c) { io.observe(c); });
+        } else {
+          cards.forEach(function (c) { c.classList.add('is-in'); });
+        }
       }
 
       // 상세: detail.html?id=N — 템플릿 한 장으로 모든 프로젝트 표시
@@ -1050,8 +939,6 @@ if (homeGrid || showcase || listGrid || detailRoot) {
         var idx = projects.findIndex(function (p) { return p.id === id; });
         if (idx === -1) idx = 0;
         var p = projects[idx];
-        var prev = projects[(idx + 1) % projects.length]; // 더 오래된 것
-        var next = projects[(idx - 1 + projects.length) % projects.length]; // 더 최신
 
         document.title = p.title + ' — Yejin Lee';
 
@@ -1071,58 +958,8 @@ if (homeGrid || showcase || listGrid || detailRoot) {
         set('.d-team', p.team);
         set('.d-tools', p.tools);
 
-        // 4. 기능 소개
-        renderFeatures(detailRoot.querySelector('#feat-root'), p.features);
         var linkDd = detailRoot.querySelector('.d-link');
         linkDd.innerHTML = p.link ? '<a href="' + esc(p.link) + '">' + esc(p.link) + '</a>' : '—';
-
-        // 5. 이전/다음
-        var prevA = detailRoot.querySelector('.pn-nav .prev');
-        prevA.href = 'detail.html?id=' + prev.id;
-        prevA.querySelector('.title').textContent = '← ' + prev.title;
-        var nextA = detailRoot.querySelector('.pn-nav .next');
-        nextA.href = 'detail.html?id=' + next.id;
-        nextA.querySelector('.title').textContent = next.title + ' →';
-
-        // 플로팅 이전/다음: 하단 버튼이 보이기 전까지 화면 양옆에 고정 노출
-        var floatPrev = document.createElement('a');
-        floatPrev.className = 'pn-float pn-float-prev';
-        floatPrev.textContent = '← Previous';
-        floatPrev.href = 'detail.html?id=' + prev.id;
-        var floatNext = document.createElement('a');
-        floatNext.className = 'pn-float pn-float-next';
-        floatNext.textContent = 'Next →';
-        floatNext.href = 'detail.html?id=' + next.id;
-        floatPrev.classList.add('off');
-        floatNext.classList.add('off');
-        document.body.appendChild(floatPrev);
-        document.body.appendChild(floatNext);
-
-        // 기능 구간에 도달하면 표시, 구간이 화면 가운데를 차지하는 동안과 하단 버튼을 만나면 숨김
-        // (점 인디케이터가 오른쪽 가장자리에 있어 Next 글자와 겹치지 않도록)
-        var imagesReached = false;
-        var featActive = false;
-        var buttonsVisible = false;
-        var updateFloat = function () {
-          var show = imagesReached && !featActive && !buttonsVisible;
-          floatPrev.classList.toggle('off', !show);
-          floatNext.classList.toggle('off', !show);
-        };
-        var featSec = detailRoot.querySelector('.detail-features');
-        var checkFeat = function () {
-          var r = featSec.getBoundingClientRect();
-          var mid = window.innerHeight * 0.5;
-          imagesReached = r.top <= window.innerHeight;
-          featActive = r.top < mid && r.bottom > mid;
-          updateFloat();
-        };
-        if (lenis) lenis.on('scroll', checkFeat);
-        window.addEventListener('scroll', checkFeat, { passive: true });
-        checkFeat();
-        new IntersectionObserver(function (entries) {
-          buttonsVisible = entries[0].isIntersecting;
-          updateFloat();
-        }).observe(detailRoot.querySelector('.pn-nav'));
       }
     });
 }
